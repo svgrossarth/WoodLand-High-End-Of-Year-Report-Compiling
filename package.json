@@ -1,0 +1,19 @@
+{
+  "name": "woodland-high-end-of-year-report-compiling",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/svgrossarth/WoodLand-High-End-Of-Year-Report-Compiling.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/svgrossarth/WoodLand-High-End-Of-Year-Report-Compiling/issues"
+  },
+  "homepage": "https://github.com/svgrossarth/WoodLand-High-End-Of-Year-Report-Compiling#readme"
+}
