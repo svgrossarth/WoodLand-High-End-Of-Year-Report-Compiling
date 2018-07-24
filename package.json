@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/svgrossarth/WoodLand-High-End-Of-Year-Report-Compiling/issues"
   },
-  "homepage": "https://github.com/svgrossarth/WoodLand-High-End-Of-Year-Report-Compiling#readme"
+  "homepage": "https://github.com/svgrossarth/WoodLand-High-End-Of-Year-Report-Compiling#readme",
+  "dependencies": {
+    "xlsx": "^0.13.1"
+  }
 }
