@@ -36,6 +36,7 @@ function ParseSheet(sheetAr){
         for(let j = 0; j < sheetAr.length; j++){
             if(sheetAr[i]["ID's"] == sheetAr[j]["ID's"]){
                 if(i != j){
+                    removeSubjectDuplicates(sheetAr, i, j);
                     sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + Number(sheetAr[j]["Count"]);
                     sheetAr[i]["Count"] = sheetAr[i]["Count"].toString();
                     sheetAr.splice(j, 1);
@@ -55,4 +56,26 @@ function CreateNewExcel(sheetAr){
     var convertedSheet = "The compiled Sheet";
     XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
     XLSX.writeFile(newWorkBook, 'correctTest.xlsx');
+}
+
+function removeSubjectDuplicates(sheetAr, i, j){
+    var outterLoopSubjects = sheetAr[i]["Subject"].split(",");
+    var innerLoopSubjects = sheetAr[j]["Subject"].split(",");
+    var newUniqueSubject = true;
+
+    for(let j2 = 0; j2 < innerLoopSubjects.length; j2++){
+        for(let i2 = 0; i2 < outterLoopSubjects.length; i2++){
+            if(innerLoopSubjects[j2].trim() == outterLoopSubjects[i2].trim()){
+                newUniqueSubject = false;
+                break;
+            }
+        }
+
+        if(newUniqueSubject){
+            sheetAr[i]["Subject"] = sheetAr[i]["Subject"] + "," + innerLoopSubjects[j2].trim();
+            outterLoopSubjects = sheetAr[i]["Subject"].split(",");
+        }
+
+        newUniqueSubject = true;
+    }
 }
