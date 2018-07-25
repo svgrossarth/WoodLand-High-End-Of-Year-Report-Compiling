@@ -13,7 +13,7 @@ function FindFile(){
     var workSheet = workBook.Sheets[arSheets[0]];
     var sheetAr = XLSX.utils.sheet_to_json(workSheet);
     ParseSheet(sheetAr);
-    CreateNewExcel(sheetAr, workBook);
+    CreateNewExcel(sheetAr);
 
     /*var test = workSheet['!ref'];
     var range = XLSX.utils.decode_range(workSheet['!ref']);
@@ -49,6 +49,10 @@ function ParseSheet(sheetAr){
 }
 
 
-function CreateNewExcel(sheetAr, workBook){
-    XLSX.writeFile(workBook, 'test.xlsx');
+function CreateNewExcel(sheetAr){
+    var newSheet = XLSX.utils.json_to_sheet(sheetAr);
+    var newWorkBook = XLSX.utils.book_new();
+    var convertedSheet = "The compiled Sheet";
+    XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
+    XLSX.writeFile(newWorkBook, 'correctTest.xlsx');
 }
