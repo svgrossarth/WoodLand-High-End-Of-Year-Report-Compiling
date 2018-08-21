@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
+<header>
+    <h1 id="bigTitle">End of Semester and End of Year Report Generator</h1>
+</header>
 <body>
-
+    <h2 id="smallerTitle"> Please Select The Report You Want to Generate</h2>
+    <select id="theSelector">
+        <option disabled selected value> -- select an report -- </option>
+        <option> Total Count</option>
+        <option> Convert Aries Query</option>
+    </select>
     <input type="file" id="inputFile">
-    <button onclick="FindFile()" id="compileFunction">Submit</button>
+    <button id="compileFunction">Submit</button>
     <script src="ParseFile.js"></script>
 
 
