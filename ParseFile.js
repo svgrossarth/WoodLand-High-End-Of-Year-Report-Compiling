@@ -40,7 +40,46 @@ function TotalCount (sheetAr){
 }
 
 function AriesQuery (sheetAr){
-    console.log("test");
+    var classCount = 2;
+    var keyword = "Class";
+    for(let i = 0; i < sheetAr.length; i++){
+        AddClassSlots(sheetAr[i]);
+        classCount = 2;
+        for(let j = 0; j < sheetAr.length; j++){
+            if(sheetAr[i]["Student ID"] == sheetAr[j]["Student ID"]){
+                if(i != j){
+                    keyword = keyword + classCount;
+                    sheetAr[i][keyword] = sheetAr[j]["Course title"];
+                    sheetAr.splice(j, 1);
+                    console.log(sheetAr.length);
+                    j--;
+                    classCount++;
+                    keyword = "Class";
+                }
+            }
+        }
+
+    }
+}
+
+function AddClassSlots(singleObject){
+    singleObject.Class1 = "";
+    singleObject.Class2 = "";
+    singleObject.Class3 = "";
+    singleObject.Class4 = "";
+    singleObject.Class5 = "";
+    singleObject.Class6 = "";
+    singleObject.Class7 = "";
+    singleObject.Class8 = "";
+    singleObject.Class9 = "";
+    singleObject.Class10 = "";
+    singleObject.Class11 = "";
+    singleObject.Class12 = "";
+    singleObject.Class13 = "";
+    singleObject.Class14 = "";
+    singleObject["Class1"] = singleObject["Course title"];
+    delete singleObject["Course title"];
+
 }
 
 
@@ -62,37 +101,13 @@ function FindFile(e){
         }
         else if(selector.value == "Convert Aries Query"){
             AriesQuery(sheetAr);
+            CreateNewExcel(sheetAr);
 
         }
         // ParseSheet(sheetAr);
         // CreateNewExcel(sheetAr);
     };
     reader.readAsArrayBuffer(file);
-
-
-  /*  console.log(e.target.files[0].path);
-   // var ar = filePath.value.split("\\");
-   // var fileName = ar[ar.length - 1];
-    var workBook = XLSX.read(filePath);
-    //XLSX.writeFile(workBook, 'testing.xlsx');
-   // var workBook = XLSX.readFile(fileName);
-    var arSheets = workBook.SheetNames;
-    var workSheet = workBook.Sheets[arSheets[0]];
-    var sheetAr = XLSX.utils.sheet_to_json(workSheet);
-    ParseSheet(sheetAr);
-    CreateNewExcel(sheetAr);
-
-    /*var test = workSheet['!ref'];
-    var range = XLSX.utils.decode_range(workSheet['!ref']);
-    var test2 = range.e.c;o
-    var test3 = range.s.r;
-    var test4 = workSheet[XLSX.utils.encode_cell({r: 1, c: 0})].v; */
-    /*var nextCell = sheet[
-        XLSX.utils.encode_cell({r: rowNum, c: colNum})
-        ];*/
-   // var test4 = workSheet[XLSX.utils.encode_cell(r: test3 + 1, c: test2)];
-  //  var theRange = workBook.encode_range(s: {c:0, r:0}, e: {c:0, r:10});
-
 
 }
 
@@ -122,7 +137,7 @@ function CreateNewExcel(sheetAr){
     var newWorkBook = XLSX.utils.book_new();
     var convertedSheet = "The compiled Sheet";
     XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
-    XLSX.writeFile(newWorkBook, 'correctTest.xlsx');
+    XLSX.writeFile(newWorkBook, 'arriestthing.xlsx');
 }
 
 function removeSubjectDuplicates(sheetAr, i, j){
