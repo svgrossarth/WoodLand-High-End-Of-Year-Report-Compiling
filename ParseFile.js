@@ -4,22 +4,6 @@ var XLSX = require('xlsx');
 var fileInput = document.getElementById("inputFile");
 fileInput.addEventListener('change', FindFile);
 
-// var selector = document.getElementById("theSelector");
-// selector.addEventListener('change', CorrectReport);
-
-/*function CorrectReport(e) {
-    var fileInput = document.getElementById("inputFile");
-
-
-    if(e.target.value == "Total Count"){
-        fileInput.addEventListener('change', TotalCount);
-    }
-    else if(e.target.value == "Convert Aries Query"){
-        fileInput.addEventListener('change', AriesQuery);
-
-    }
-
-}*/
 
 function TotalCount (sheetAr){
     for(let i = 0; i < sheetAr.length; i++){
@@ -40,29 +24,34 @@ function TotalCount (sheetAr){
 }
 
 function AriesQuery (sheetAr){
-    var classCount = 2;
     var keyword = "Class";
     for(let i = 0; i < sheetAr.length; i++){
-        AddClassSlots(sheetAr[i]);
-        classCount = 2;
+        AddClassSlots(sheetAr[i], keyword);
+
         for(let j = 0; j < sheetAr.length; j++){
             if(sheetAr[i]["Student ID"] == sheetAr[j]["Student ID"]){
                 if(i != j){
-                    keyword = keyword + classCount;
-                    sheetAr[i][keyword] = sheetAr[j]["Course title"];
-                    sheetAr.splice(j, 1);
-                    console.log(sheetAr.length);
-                    j--;
-                    classCount++;
-                    keyword = "Class";
+                    if(sheetAr[j]["Semester"] != "S"){
+                        var period = sheetAr[j]["Period"];
+                        keyword = keyword + period;
+                        sheetAr[i][keyword] = period + " - " + sheetAr[j]["Course title"];
+                        AVIDChecker(sheetAr[i], sheetAr[j]["Course title"]);
+                        sheetAr.splice(j, 1);
+                        console.log(sheetAr.length);
+                        j--;
+                        keyword = "Class";
+                    }else {
+                        sheetAr.splice(j, 1);
+                        j--;
+                    }
                 }
             }
         }
-
     }
 }
 
-function AddClassSlots(singleObject){
+function AddClassSlots(singleObject, keyword){
+    singleObject.Class0 = "";
     singleObject.Class1 = "";
     singleObject.Class2 = "";
     singleObject.Class3 = "";
@@ -72,13 +61,22 @@ function AddClassSlots(singleObject){
     singleObject.Class7 = "";
     singleObject.Class8 = "";
     singleObject.Class9 = "";
-    singleObject.Class10 = "";
-    singleObject.Class11 = "";
-    singleObject.Class12 = "";
-    singleObject.Class13 = "";
-    singleObject.Class14 = "";
-    singleObject["Class1"] = singleObject["Course title"];
+    singleObject.AVID = "";
+    var period = singleObject["Period"];
+    keyword = keyword + period;
+    singleObject[keyword] = period + " - " + singleObject["Course title"];
+    AVIDChecker(singleObject, singleObject["Course title"]);
     delete singleObject["Course title"];
+    delete singleObject["Period"];
+    delete singleObject["Semester"];
+
+}
+
+function AVIDChecker(outLoopStudent, innerLoopSubject) {
+    if(innerLoopSubject.includes("AVID")){
+        outLoopStudent["AVID"] = "X";
+    }
+
 
 }
 
@@ -99,7 +97,7 @@ function FindFile(e){
         if(selector.value == "Total Count"){
             TotalCount(sheetAr);
         }
-        else if(selector.value == "Convert Aries Query"){
+        else if(selector.value == "Convert Aries Query Fall"){
             AriesQuery(sheetAr);
             CreateNewExcel(sheetAr);
 
@@ -137,7 +135,7 @@ function CreateNewExcel(sheetAr){
     var newWorkBook = XLSX.utils.book_new();
     var convertedSheet = "The compiled Sheet";
     XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
-    XLSX.writeFile(newWorkBook, 'arriestthing.xlsx');
+    XLSX.writeFile(newWorkBook, 'parsedStudentRoster.xlsx');
 }
 
 function removeSubjectDuplicates(sheetAr, i, j){
