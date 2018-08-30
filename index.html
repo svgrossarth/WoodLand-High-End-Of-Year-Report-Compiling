@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <header>
     <h1 id="bigTitle">End of Semester and End of Year Report Generator</h1>
 </header>
 <body>
     <h2 id="smallerTitle"> Please Select The Report You Want to Generate</h2>
-    <select id="theSelector">
-        <option disabled selected value> -- select an report -- </option>
-        <option> Total Count</option>
-        <option> Convert Aries Query Fall</option>
-    </select>
-    <input type="file" id="inputFile">
-    <button id="compileFunction">Submit</button>
-    <script src="ParseFile.js"></script>
-
-
+    <div id="inputDiv">
+        <div id="selectorDiv">
+            <select id="theSelector">
+                <option disabled selected value> -- select an report -- </option>
+                <option> Total Count</option>
+                <option> Convert Aries Query Fall</option>
+                <option> Convert Aries Query Fall With ALL Programs</option>
+                <option> Update ETS Roster</option>
+                <option> Update Migrant Ed Roster</option>
+                <option> Update PTS Roster</option>
+                <option> Update ELD Roster</option>
+            </select>
+        </div>
+    </div>
 </body>
+<script src="ParseFile.js"></script>
 </html>

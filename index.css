@@ -1,0 +1,10 @@
+#inputDiv{
+    display: flex;
+    flex-direction: column;
+}
+
+#selectorDiv{
+    display: flex;
+    flex-direction: row;
+
+}
