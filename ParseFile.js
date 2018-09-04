@@ -1,9 +1,37 @@
 
 var XLSX = require('xlsx');
 
+const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
+    "Update ETS Roster", "Update Migrant Ed Roster", "Update PTS Roster", "Update ELD Roster"];
+
 var theSelector =  document.getElementById("theSelector");
 theSelector.addEventListener('change', UpdateDOMForFileSelection);
-var arraySheetAr = [];
+
+
+var objSheetAr = {
+    periodAttendance: "",
+    ariesQuery: "",
+    etsRoster: "",
+    ptsRoster: "",
+    migRoster: "",
+    eldRoster: "",
+};
+
+
+const theHandler = {
+    set(obj, prop, value){
+        if(prop == "periodAttendance" && value != ""){
+            TotalCount(objSheetAr["periodAttendance"]);
+        }else if(prop == "ariesQuery" && value !="" && obj["etsRoster"] == "" && obj["ptsRoster"] == "" && obj["migRoster"] == "" && obj["eldRoster"] == ""){
+            AriesQuery(objSheetAr["ariesQuery"]);
+        }else if(obj["ariesQuery"] != "" && obj["etsRoster"] != "" && obj["ptsRoster"] != "" && obj["migRoster"] != "" && obj["eldRoster"] != ""){
+
+        }
+    }
+}
+
+var theProxy = new Proxy(objSheetAr, theHandler);
+
 
 /*
 var fileInput = document.getElementById("inputFile");
@@ -17,8 +45,39 @@ function TheButGenerator(){
     theSubBut.setAttribute("type", "button");
     var theButText = document.createTextNode("Submit");
     theSubBut.appendChild(theButText);
-    theSubBut.addEventListener("click", FindFile);
+    theSubBut.addEventListener("click", DetermineRequest);
     return theSubBut;
+}
+
+
+function DetermineRequest() {
+    if(theSelector.value == arrayOfPossibleChoices[0]){
+        GetSingleFile("periodAttendance");
+
+
+    }else if(theSelector.value == arrayOfPossibleChoices[1]){
+        GetSingleFile("ariesQuery");
+
+    }else if(theSelector.value == arrayOfPossibleChoices[2]){
+        GetEachProgramRoster();
+    }
+}
+
+function GetEachProgramRoster() {
+
+
+
+}
+
+
+function GetSingleFile(sheetName){
+    var file = document.getElementById("fileInput0").files[0];
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        ConvertSheetToJSON(e, 0, sheetName);
+
+    };
+    reader.readAsArrayBuffer(file);
 
 }
 
@@ -79,47 +138,47 @@ function UpdateDOMForFileSelection(e) {
     var textNodeArray = [];
     var textNode = document.createTextNode("Please Select Aries Query");
     textNodeArray.push(textNode);
-    if(theSelector.value == "Total Count"){
+    if(theSelector.value == arrayOfPossibleChoices[0]){
         var textNodeAttendance = document.createTextNode("Please Select Attendence File");
         AttachInputTextInital(textNodeAttendance);
         var theSubBut = TheButGenerator();
         document.getElementById("innerInputDiv0").appendChild(theSubBut);
-    }else if(theSelector.value == "Convert Aries Query Fall"){
+    }else if(theSelector.value == arrayOfPossibleChoices[1]){
         AttachInputTextInital(textNode);
         var theSubBut = TheButGenerator();
         document.getElementById("innerInputDiv0").appendChild(theSubBut);
-    }else if(theSelector.value == "Update ETS Roster"){
+    } else if(theSelector.value == arrayOfPossibleChoices[2]){
+        var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
+        textNodeArray.push(textNode1);
+        AttachInputTextInital(textNode);
+        AttachInputTextRec(textNodeArray, 1, 2);
+
+    }else if(theSelector.value == arrayOfPossibleChoices[3]){
         var textNode1 = document.createTextNode("Please Select ETS Roster");
         textNodeArray.push(textNode1);
         AttachInputTextInital(textNode);
         AttachInputTextRec(textNodeArray, 1, 2);
 
-    }else if(theSelector.value == "Update Migrant Ed Roster"){
+    }else if(theSelector.value == arrayOfPossibleChoices[4]){
         var textNode1 = document.createTextNode("Please Select Migrant Ed Roster");
         textNodeArray.push(textNode1);
         AttachInputTextInital(textNode);
         AttachInputTextRec(textNodeArray, 1, 2);
 
-    }else if(theSelector.value == "Update PTS Roster"){
+    }else if(theSelector.value == arrayOfPossibleChoices[5]){
         var textNode1 = document.createTextNode("Please Select PTS Roster");
         textNodeArray.push(textNode1);
         AttachInputTextInital(textNode);
         AttachInputTextRec(textNodeArray, 1, 2);
 
-    }else if(theSelector.value == "Update ELD Roster"){
+    }else if(theSelector.value == arrayOfPossibleChoices[6]){
         var textNode1 = document.createTextNode("Please Select ELD Roster");
         textNodeArray.push(textNode1);
         AttachInputTextInital(textNode);
         AttachInputTextRec(textNodeArray, 1, 2);
 
     }
-    else if(theSelector.value == "Convert Aries Query Fall With ALL Programs"){
-        var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
-        textNodeArray.push(textNode1);
-        AttachInputTextInital(textNode);
-        AttachInputTextRec(textNodeArray, 1, 2);
 
-    }
 
 
 }
@@ -167,6 +226,7 @@ function AriesQuery (sheetAr){
             }
         }
     }
+    CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx")
 }
 
 function AddClassSlots(singleObject, keyword){
@@ -210,14 +270,17 @@ function HandleSheets(arraySheetAr) {
 
 }
 
-function ConvertFileToJSON(e, allFiles, i, arraySheetAr) {
+function ConvertSheetToJSON(e, correctSheet, sheetname) {
 
         var data = e.target.result;
         data = new Uint8Array(data);
         var workBook = XLSX.read(data, {type: 'array'});
         var arSheets = workBook.SheetNames;
-        var workSheet = workBook.Sheets[arSheets[0]];
-        arraySheetAr.push(XLSX.utils.sheet_to_json(workSheet));
+        var workSheet = workBook.Sheets[arSheets[correctSheet]];
+        var json = XLSX.utils.sheet_to_json(workSheet);
+        objSheetAr[sheetname] = json;
+        theProxy[sheetname] = json;
+
 }
 
 function FindFileInital(e){
@@ -249,7 +312,7 @@ function FindFile(){
     for(var i = 0; i < numOfFiles; i++){(function (file){
         var reader = new FileReader();
         reader.onload = function (e) {
-            ConvertFileToJSON(e, allFiles, i, arraySheetAr);
+            ConvertFileToJSON(e);
 
         }
         reader.readAsArrayBuffer(file);
@@ -344,12 +407,12 @@ function ParseSheet(sheetAr){
 }
 
 
-function CreateNewExcel(sheetAr){
+function CreateNewExcel(sheetAr, newExcelName){
     var newSheet = XLSX.utils.json_to_sheet(sheetAr);
     var newWorkBook = XLSX.utils.book_new();
     var convertedSheet = "The compiled Sheet";
     XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
-    XLSX.writeFile(newWorkBook, 'parsedStudentRoster.xlsx');
+    XLSX.writeFile(newWorkBook, newExcelName);
 }
 
 function removeSubjectDuplicates(sheetAr, i, j){
