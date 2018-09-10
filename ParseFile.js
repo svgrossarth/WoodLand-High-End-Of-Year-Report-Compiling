@@ -36,10 +36,7 @@ const theHandler = {
 var theProxy = new Proxy(objSheetAr, theHandler);
 
 
-/*
-var fileInput = document.getElementById("inputFile");
-fileInput.addEventListener('change', FindFileInital);
-*/
+
 
 function InsertPrograms(theStudent) {
     theStudent.ELD ="";
@@ -212,7 +209,7 @@ function AttachInputTextInital(textNode){
     textDiv1.style.paddingRight = "5px";
     innerInputDiv0.appendChild(textDiv1);
     var fileInput = document.getElementById("fileInput0");
-    //fileInput.addEventListener('change', FindFileInital);
+
 }
 
 function AttachInputTextRec(textNodeArray, i, totalNumFiles) {
@@ -234,7 +231,6 @@ function AttachInputTextRec(textNodeArray, i, totalNumFiles) {
     newTextDiv.appendChild(textNodeArray[i]);
     innerInputDiv.appendChild(newTextDiv);
     var fileInput = document.getElementById("fileInput" + i + 1);
-   // fileInput.addEventListener('change', FindFileInital);
 
     if(i == totalNumFiles - 1){
         var theSubBut = TheButGenerator();
@@ -377,16 +373,6 @@ function AVIDChecker(outLoopStudent, innerLoopSubject) {
 }
 
 
-function TestFunc1(sheetAr) {
-    console.log("Single file test")
-
-}
-
-function HandleSheets(arraySheetAr) {
-    console.log("Test");
-
-}
-
 function ConvertSheetToJSON(e, correctSheet, sheetname) {
 
         var data = e.target.result;
@@ -399,110 +385,6 @@ function ConvertSheetToJSON(e, correctSheet, sheetname) {
         theProxy[sheetname] = json;
 
 }
-
-function FindFileInital(e){
-        var file = e.target.files[0];
-        var reader = new FileReader();
-        reader.onload = function (e){
-            ConvertFileToJSON(e);
-
-        };
-        reader.readAsArrayBuffer(file);
-
-
-}
-
-function FindFile(){
-   /* for (; i < allFiles.length; i++){
-        (function (file,allFiles, i, arraySheetAr) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                ConvertFileToJSON(e, allFiles, i, arraySheetAr);
-
-            }
-            reader.readAsArrayBuffer(file);
-        })(allFiles[i],allFiles, i, arraySheetAr);
-    }*/
-    var alignerDiv = document.getElementById("aligner");
-    var numOfFiles = alignerDiv.children.length;
-    var arOfInputs = alignerDiv.children;
-    for(var i = 0; i < numOfFiles; i++){(function (file){
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            ConvertFileToJSON(e);
-
-        }
-        reader.readAsArrayBuffer(file);
-
-    })(arOfInputs[i].children[0].files[0])}
-}
-
-
-/*
-function FindFile(e){
-
-    if(e.target.files.length == 1){
-        var file = e.target.files[0];
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data = e.target.result;
-            data = new Uint8Array(data);
-            var workBook = XLSX.read(data, {type: 'array'});
-            var arSheets = workBook.SheetNames;
-            var workSheet = workBook.Sheets[arSheets[0]];
-            var sheetAr = XLSX.utils.sheet_to_json(workSheet);
-            TestFunc1(sheetAr);
-        };
-        reader.readAsArrayBuffer(file);
-
-    }
-    else if(e.target.files.length == 2){
-        var files = e.target.files;
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data = e.target.result;
-            data = new Uint8Array(data);
-            var workBook = XLSX.read(data, {type: 'array'});
-            var arSheets = workBook.SheetNames;
-            var workSheet = workBook.Sheets[arSheets[0]];
-            var sheetAr = XLSX.utils.sheet_to_json(workSheet);
-            TestFunc1(sheetAr);
-        };
-        reader.readAsArrayBuffer(files);
-
-    }*/
-
-/*
-    //this bit here is the magic that takes the file and makes it so it is read able by sheetjs
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var data = e.target.result;
-        data = new Uint8Array(data);
-        var workBook = XLSX.read(data, {type: 'array'});
-        var arSheets = workBook.SheetNames;
-        var workSheet = workBook.Sheets[arSheets[0]];
-        var sheetAr = XLSX.utils.sheet_to_json(workSheet);
-        return sheetAr;
-    }
-    reader.readAsArrayBuffer(file);
-
-
-        if(selector.value == "Total Count"){
-            TotalCount(sheetAr);
-        }
-        else if(selector.value == "Convert Aries Query Fall"){
-            AriesQuery(sheetAr);
-            CreateNewExcel(sheetAr);
-
-        }
-        // ParseSheet(sheetAr);
-        // CreateNewExcel(sheetAr);
-
-
-
-
-}*/
-
 
 function ParseSheet(sheetAr){
 
