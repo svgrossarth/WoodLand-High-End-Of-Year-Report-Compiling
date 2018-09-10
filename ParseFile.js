@@ -23,12 +23,15 @@ const theHandler = {
         if(prop == "periodAttendance" && value != ""){
             TotalCount(objSheetAr["periodAttendance"]);
         }else if(prop == "ariesQuery" && value !="" && obj["etsRoster"] == "" && obj["ptsRoster"] == "" && obj["migRoster"] == "" && obj["eldRoster"] == ""){
-            AriesQuery(objSheetAr["ariesQuery"]);
+            var sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
+            CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
         }else if(obj["ariesQuery"] != "" && obj["etsRoster"] != "" && obj["ptsRoster"] != "" && obj["migRoster"] != "" && obj["eldRoster"] != ""){
-
+            var sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
+            sheetAr = AddPrograms(sheetAr);
+            CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
         }
     }
-}
+};
 
 var theProxy = new Proxy(objSheetAr, theHandler);
 
@@ -38,6 +41,55 @@ var fileInput = document.getElementById("inputFile");
 fileInput.addEventListener('change', FindFileInital);
 */
 
+function InsertPrograms(theStudent) {
+    theStudent.ELD ="";
+    theStudent.PTS ="";
+    theStudent.ETS ="";
+    theStudent.MIG ="";
+
+}
+
+
+function AddPrograms(sheetAr) {
+    let ELDRoster = objSheetAr["eldRoster"];
+    let ETSRoster = objSheetAr["etsRoster"];
+    let PTSRoster = objSheetAr["ptsRoster"];
+    let MIGRoster = objSheetAr["migRoster"];
+    for(let i = 0; i < sheetAr.length; i++){
+        InsertPrograms(sheetAr[i]);
+        for(let ELDIndex = 0; ELDIndex < ELDRoster.length; ELDIndex++){
+            if(sheetAr[i]["Student ID"] === ELDRoster[ELDIndex]["Student ID"]){
+                sheetAr[i]["ELD"] = "X";
+                ELDRoster.splice(ELDIndex, 1);
+                break;
+            }
+        }
+        for(let PTSIndex = 0; PTSIndex < PTSRoster.length; PTSIndex++){
+            if(sheetAr[i]["Student ID"] === PTSRoster[PTSIndex]["Student ID"]){
+                sheetAr[i]["PTS"] = "X";
+                PTSRoster.splice(PTSIndex, 1);
+                break;
+            }
+        }
+        for(let ETSIndex = 0; ETSIndex < ETSRoster.length; ETSIndex++){
+            if(sheetAr[i]["Student ID"] === ETSRoster[ETSIndex]["Student ID"]){
+                sheetAr[i]["ETS"] = "X";
+                ETSRoster.splice(ETSIndex, 1);
+                break;
+            }
+        }
+        for(let MIGIndex = 0; MIGIndex < MIGRoster.length; MIGIndex++){
+            if(sheetAr[i]["Student ID"] === MIGRoster[MIGIndex]["Student ID"]){
+                sheetAr[i]["MIG"] = "X";
+                MIGRoster.splice(MIGIndex, 1);
+                break;
+            }
+        }
+
+    }
+    return sheetAr;
+
+}
 
 function TheButGenerator(){
     var theSubBut = document.createElement("button");
@@ -64,8 +116,73 @@ function DetermineRequest() {
 }
 
 function GetEachProgramRoster() {
+    var alignerDiv = document.getElementById("aligner");
+    var numOfFiles = alignerDiv.children.length;
+    var arOfInputs = alignerDiv.children;
+    for(var i = 0; i < numOfFiles; i++){(function (file, i){
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            if(i == 0){
+                ConvertSheetToJSON(e, 0, "ariesQuery");
+            }else if(i == 1){
+                ConvertSheetToJSONAllPrograms(e)
+            }
+        };
+        reader.readAsArrayBuffer(file);
+
+    })(arOfInputs[i].children[0].files[0], i)}
+}
 
 
+function CorrectHeaders(workSheet) {
+    let initalJSON = XLSX.utils.sheet_to_json(workSheet);
+    for(var i = 0; i < initalJSON.length; i++) {
+        let getOut = false;
+        for (cell in initalJSON[i]) {
+            if (initalJSON[i][cell] === "Student ID") {
+                getOut = !getOut;
+                break;
+            }
+        }
+        if (getOut) {
+            break;
+        }
+    }
+    let correctJSON = XLSX.utils.sheet_to_json(workSheet, {range: i + 1});
+    return correctJSON;
+}
+
+function ConvertSheetToJSONAllPrograms(e){
+    var data = e.target.result;
+    data = new Uint8Array(data);
+    var workBook = XLSX.read(data, {type: 'array'});
+    var arSheets = workBook.SheetNames;
+    for(sheet in arSheets){
+        if(arSheets[sheet].includes("ELD")){
+            var workSheet = workBook.Sheets[arSheets[sheet]];
+            var json = CorrectHeaders(workSheet);
+            objSheetAr["eldRoster"] = json;
+            theProxy["eldRoster"] = json;
+        }else if(arSheets[sheet].includes("ME")){
+            var workSheet = workBook.Sheets[arSheets[sheet]];
+            var json = CorrectHeaders(workSheet);
+            objSheetAr["migRoster"] = json;
+            theProxy["migRoster"] = json;
+
+        }else if(arSheets[sheet].includes("ETS")){
+            var workSheet = workBook.Sheets[arSheets[sheet]];
+            var json = CorrectHeaders(workSheet);
+            objSheetAr["etsRoster"] = json;
+            theProxy["etsRoster"] = json;
+
+        }else if(arSheets[sheet].includes("PTS")){
+            var workSheet = workBook.Sheets[arSheets[sheet]];
+            var json = CorrectHeaders(workSheet);
+            objSheetAr["ptsRoster"] = json;
+            theProxy["ptsRoster"] = json;
+
+        }
+    }
 
 }
 
@@ -226,7 +343,7 @@ function AriesQuery (sheetAr){
             }
         }
     }
-    CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx")
+    return sheetAr;
 }
 
 function AddClassSlots(singleObject, keyword){
