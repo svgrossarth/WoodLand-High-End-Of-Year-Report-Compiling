@@ -2,7 +2,8 @@
 var XLSX = require('xlsx');
 
 const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
-    "Update ETS Roster", "Update Migrant Ed Roster", "Update PTS Roster", "Update ELD Roster"];
+    "Update ETS Roster", "Update Migrant Ed Roster", "Update PTS Roster", "Update ELD Roster",
+    "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report"];
 
 var theSelector =  document.getElementById("theSelector");
 theSelector.addEventListener('change', UpdateDOMForFileSelection);
@@ -21,7 +22,8 @@ var objSheetAr = {
 const theHandler = {
     set(obj, prop, value){
         if(prop == "periodAttendance" && value != ""){
-            TotalCount(objSheetAr["periodAttendance"]);
+            let sheetAr = TotalCount(objSheetAr["periodAttendance"]);
+            CreateNewExcel(sheetAr, "TotalCountReport.xlsx")
         }else if(prop == "ariesQuery" && value !="" && obj["etsRoster"] == "" && obj["ptsRoster"] == "" && obj["migRoster"] == "" && obj["eldRoster"] == ""){
             var sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
             CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
@@ -109,6 +111,8 @@ function DetermineRequest() {
 
     }else if(theSelector.value == arrayOfPossibleChoices[2]){
         GetEachProgramRoster();
+    }else if(theSelector.value === arrayOfPossibleChoices[7]){
+        GetSingleFile("periodAttendance");
     }
 }
 
@@ -208,7 +212,6 @@ function AttachInputTextInital(textNode){
     textDiv1.style.paddingLeft = "5px";
     textDiv1.style.paddingRight = "5px";
     innerInputDiv0.appendChild(textDiv1);
-    var fileInput = document.getElementById("fileInput0");
 
 }
 
@@ -252,7 +255,7 @@ function UpdateDOMForFileSelection(e) {
     var textNode = document.createTextNode("Please Select Aries Query");
     textNodeArray.push(textNode);
     if(theSelector.value == arrayOfPossibleChoices[0]){
-        var textNodeAttendance = document.createTextNode("Please Select Attendence File");
+        var textNodeAttendance = document.createTextNode("Please Select Attendance File");
         AttachInputTextInital(textNodeAttendance);
         var theSubBut = TheButGenerator();
         document.getElementById("innerInputDiv0").appendChild(theSubBut);
@@ -290,27 +293,113 @@ function UpdateDOMForFileSelection(e) {
         AttachInputTextInital(textNode);
         AttachInputTextRec(textNodeArray, 1, 2);
 
-    }
+    }else if(theSelector.value === arrayOfPossibleChoices[7]){
+        var textNodeAttendance = document.createTextNode("Please Select Attendance File");
+        textNodeArray.push(textNodeAttendance);
+        AttachInputTextInital(textNodeAttendance);
+        AttachMonthInput();
+        var theSubBut = TheButGenerator();
+        document.getElementById("innerInputDiv0").appendChild(theSubBut);
 
+    }
+}
+
+
+
+function AttachMonthInput() {
+    var textMonthInput = document.createTextNode("Please Enter Month As A Number")
+    var innerInputDiv0 = document.getElementById("innerInputDiv0");
+    var input = document.createElement("input");
+    input.setAttribute("type", "number");
+    input.setAttribute("min", "0");
+    input.setAttribute("id", "fileInput1");
+    input.style.borderStyle = "solid";
+    innerInputDiv0.appendChild(input);
+    var textDiv2 = document.createElement("Div");
+    textDiv2.setAttribute("id", "text2");
+    textDiv2.appendChild(textMonthInput);
+    textDiv2.style.paddingLeft = "5px";
+    textDiv2.style.paddingRight = "5px";
+    innerInputDiv0.appendChild(textDiv2);
 
 
 }
 
+function AddAndRemoveKeys(student) {
+    AddCountOuter(student);
+    delete student["Student Sign Out (Tutor Name)"];
+    delete student["Time In"];
+    delete student["Time Out"];
+    delete student["Period"];
+    delete student["Date"];
+    delete student["ELD"];
+    delete student["PTS"];
+    delete student["ETS"];
+    delete student["MIG"];
+
+}
+
+function ConcatenateOtherSubject(sheetAr, i, j){
+    if(sheetAr[i]["Other Subject"] === undefined && !(sheetAr[j]["Other Subject"] === undefined)) {
+        sheetAr[i]["Other Subject"] = sheetAr[j]["Other Subject"];
+    }else if(!(sheetAr[i]["Other Subject"] === undefined) && !(sheetAr[j]["Other Subject"] === undefined)){
+        sheetAr[i]["Other Subject"] =  sheetAr[i]["Other Subject"] + "," + sheetAr[j]["Other Subject"];
+    }
+}
+
 function TotalCount (sheetAr){
     for(let i = 0; i < sheetAr.length; i++){
-        for(let j = 0; j < sheetAr.length; j++){
-            if(sheetAr[i]["ID's"] == sheetAr[j]["ID's"]){
-                if(i != j){
-                    removeSubjectDuplicates(sheetAr, i, j);
-                    sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + Number(sheetAr[j]["Count"]);
-                    sheetAr[i]["Count"] = sheetAr[i]["Count"].toString();
+        if(!(sheetAr[i]["Student ID"] === undefined)) {
+            AddAndRemoveKeys(sheetAr[i]);
+            for (let j = 0; j < sheetAr.length; j++) {
+                if (!(sheetAr[j]["Student ID"] === undefined)) {
+                    if (sheetAr[i]["Student ID"] === sheetAr[j]["Student ID"]) {
+                        if (i !== j) {
+                            removeSubjectDuplicates(sheetAr, i, j);
+                            ConcatenateOtherSubject(sheetAr, i, j);
+                            let innerCount = CheckForCount(sheetAr[j]);
+                            if (innerCount) {
+                                sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + Number(sheetAr[j]["Count"]);
+                            }
+                            else {
+                                sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + 1;
+                            }
+                            sheetAr[i]["Count"] = sheetAr[i]["Count"].toString();
+                            sheetAr.splice(j, 1);
+                            console.log(sheetAr.length);
+                            j--;
+                        }
+                    }
+                }else{
                     sheetAr.splice(j, 1);
-                    console.log(sheetAr.length);
                     j--;
                 }
             }
+        }else{
+            sheetAr.splice(i, 1);
+            i--;
         }
+    }
+    return sheetAr;
+}
 
+
+function CheckForCount(student) {
+    const theKeys = Object.keys(student);
+    let thereIsCount = false;
+    for(let k = 0; k < theKeys.length; k++){
+        if(theKeys[k] === "Count"){
+            thereIsCount = true;
+        }
+    }
+    return thereIsCount;
+
+}
+
+function AddCountOuter(student){
+    let thereIsCount = CheckForCount(student);
+    if(!thereIsCount){
+        student.Count ="1";
     }
 }
 
@@ -386,25 +475,6 @@ function ConvertSheetToJSON(e, correctSheet, sheetname) {
 
 }
 
-function ParseSheet(sheetAr){
-
-    for(let i = 0; i < sheetAr.length; i++){
-        for(let j = 0; j < sheetAr.length; j++){
-            if(sheetAr[i]["ID's"] == sheetAr[j]["ID's"]){
-                if(i != j){
-                    removeSubjectDuplicates(sheetAr, i, j);
-                    sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + Number(sheetAr[j]["Count"]);
-                    sheetAr[i]["Count"] = sheetAr[i]["Count"].toString();
-                    sheetAr.splice(j, 1);
-                    console.log(sheetAr.length);
-                    j--;
-                }
-            }
-        }
-
-    }
-}
-
 
 function CreateNewExcel(sheetAr, newExcelName){
     var newSheet = XLSX.utils.json_to_sheet(sheetAr);
@@ -412,26 +482,36 @@ function CreateNewExcel(sheetAr, newExcelName){
     var convertedSheet = "The compiled Sheet";
     XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
     XLSX.writeFile(newWorkBook, newExcelName);
+    UpdateUserAboutFile(newExcelName);
+}
+
+function  UpdateUserAboutFile(newExcelname) {
+    let displayArea = document.getElementById("displayResults");
+    let displayText = document.createTextNode(newExcelname + " has been generated!");
+    displayArea.appendChild(displayText);
+    
 }
 
 function removeSubjectDuplicates(sheetAr, i, j){
-    var outterLoopSubjects = sheetAr[i]["Subject"].split(",");
-    var innerLoopSubjects = sheetAr[j]["Subject"].split(",");
-    var newUniqueSubject = true;
+    if(!(sheetAr[i]["Subject"] === undefined) && !(sheetAr[j]["Subject"] === undefined)) {
+        var outterLoopSubjects = sheetAr[i]["Subject"].split(",");
+        var innerLoopSubjects = sheetAr[j]["Subject"].split(",");
+        var newUniqueSubject = true;
 
-    for(let j2 = 0; j2 < innerLoopSubjects.length; j2++){
-        for(let i2 = 0; i2 < outterLoopSubjects.length; i2++){
-            if(innerLoopSubjects[j2].trim() == outterLoopSubjects[i2].trim()){
-                newUniqueSubject = false;
-                break;
+        for (let j2 = 0; j2 < innerLoopSubjects.length; j2++) {
+            for (let i2 = 0; i2 < outterLoopSubjects.length; i2++) {
+                if (innerLoopSubjects[j2].trim() == outterLoopSubjects[i2].trim()) {
+                    newUniqueSubject = false;
+                    break;
+                }
             }
-        }
 
-        if(newUniqueSubject){
-            sheetAr[i]["Subject"] = sheetAr[i]["Subject"] + "," + innerLoopSubjects[j2].trim();
-            outterLoopSubjects = sheetAr[i]["Subject"].split(",");
-        }
+            if (newUniqueSubject) {
+                sheetAr[i]["Subject"] = sheetAr[i]["Subject"] + "," + innerLoopSubjects[j2].trim();
+                outterLoopSubjects = sheetAr[i]["Subject"].split(",");
+            }
 
-        newUniqueSubject = true;
+            newUniqueSubject = true;
+        }
     }
 }
