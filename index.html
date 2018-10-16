@@ -4,33 +4,36 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,800" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 </head>
-<header>
-    <h1 id="bigTitle">End of Semester/ Year and Student Roster Generator</h1>
-</header>
 <body>
-    <h2 id="smallerTitle"> Please Select The Report You Want to Generate</h2>
-    <div id="inputDiv">
-        <div id="selectorDiv">
-            <select id="theSelector">
-                <option disabled selected value> -- select an report -- </option>
-                <option> Total Count</option>
-                <option> Convert Aries Query Fall</option>
-                <option> Convert Aries Query Fall With ALL Programs</option>
-                <option> Update ETS Roster</option>
-                <option> Update Migrant Ed Roster</option>
-                <option> Update PTS Roster</option>
-                <option> Update ELD Roster</option>
-                <option> Monthly Lunch ASSETs Report</option>
-                <option> Monthly After School ASSETs Report</option>
-            </select>
-        </div>
-        <div id="aligner">
-            <div id="innerInputDiv0">
+    <div id="bigCenter">
+        <h1 id="bigTitle">Student Roster and Report Generator</h1>
+        <h2 id="smallerTitle"> Please Select The Report You Want to Generate</h2>
+        <div id="inputDivclass">
+            <div id="selectorDiv">
+                <select id="theSelector">
+                    <option disabled selected value> -- select an report -- </option>
+                    <option> Total Count</option>
+                    <option> Convert Aries Query Fall</option>
+                    <option> Convert Aries Query Fall With ALL Programs</option>
+                    <option> Update ETS Roster</option>
+                    <option> Update Migrant Ed Roster</option>
+                    <option> Update PTS Roster</option>
+                    <option> Update ELD Roster</option>
+                    <option> Monthly Lunch ASSETs Report</option>
+                    <option> Monthly After School ASSETs Report</option>
+                </select>
+            </div>
+            <div id="aligner">
+                <div id="innerInputDiv0">
+                </div>
             </div>
         </div>
-    </div>
-    <div id ="displayResults">
+        <div id ="displayResults">
+        </div>
     </div>
 </body>
 <script src="ParseFile.js"></script>

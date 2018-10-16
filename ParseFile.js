@@ -86,6 +86,9 @@ function Timez(timeString) {
 
 
 function TimeInCenter(timeOut, timeIn) {
+    if(timeOut === ""){
+        return 1;
+    }
     let time_In = new Timez(timeIn);
     let time_out = new Timez(timeOut);
     let exactTime = time_out.absoluteTime - time_In.absoluteTime;
@@ -105,7 +108,6 @@ function TimeInCenter(timeOut, timeIn) {
     }else {
         return wholeTime + justDecimal;
     }
-
 }
 
 function removePeriodFromClass(objectContainer) {
@@ -150,10 +152,26 @@ function BuildStudentOb (ASSETsAr, periodAttendanceRow, dayOfTheMonth, period, c
             ASSETsAr[i]["Subject"] += ", " + periodAttendanceRow["Other Subject"];
         }
         //ASSETsAr[i].Subject += ", " + periodAttendanceRow["Subject"];
-        ASSETsAr[i][dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+        if(period === "Lunch"){
+            if(ASSETsAr[i][dayOfTheMonth] === ""){
+                ASSETsAr[i][dayOfTheMonth] = "1";
+            }else{
+                console.log("Duplicate Found!! for " + ASSETsAr[i]["StudentName"] + " on the " + dayOfTheMonth);
+                ASSETsAr[i][dayOfTheMonth] = "1";
+            }
+
+        }else if(period === "After School"){
+            if(ASSETsAr[i][dayOfTheMonth] === ""){
+                ASSETsAr[i][dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+            }else{
+                console.log("Duplicate Found!! for " + ASSETsAr[i]["StudentName"] + " on the " + dayOfTheMonth);
+                ASSETsAr[i][dayOfTheMonth] += TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+            }
+
+        }
+
 
     }else {
-
         studentOb.Count = counter;
         studentOb.Grade = periodAttendanceRow["Grade"];
         studentOb.StudentID = periodAttendanceRow["Student ID"];
