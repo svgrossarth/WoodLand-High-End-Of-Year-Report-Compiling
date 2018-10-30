@@ -23,18 +23,76 @@ body{
 #selectorDiv{
     display: flex;
     flex-direction: row;
+    justify-content: center;
 
 }
 
 #aligner{
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
-#innerInputDiv0{
+
+
+.innerInputDiv{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    align-items: center;
+
 }
+/*from: https://tympanus.net/codrops/2015/09/15/styling-customizing-file-inputs-smart-way/*/
+.fileInputDiv{ /*Hides the std input*/
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.fileInputDiv + label {
+    font-family: 'Open Sans', sans-serif;
+    color: black;
+    background-color: white;
+    box-shadow: 6px 6px 15px grey;
+    display: inline-block;
+    cursor: pointer; /* "hand" cursor */
+    border-radius: 20px;
+    padding: 10px;
+}
+
+
+.fa-upload{
+    color: black;
+}
+
+.textDiv{
+    padding-top: 5px;
+    padding-bottom: 5px;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+
+}
+
+#submitButton{
+    margin-top: 5px;
+    background: #ffff99;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 10px;
+    border: none;
+    outline: none;
+    box-shadow: 6px 6px 15px grey;
+}
+
+.labels{
+    margin-bottom: 5px;
+}
+
+
 
 #displayResults{
     font-size: 40px;
@@ -62,14 +120,21 @@ body{
 
 
 .ui-selectmenu-menu{
-    box-shadow: 6px 6px 15px grey;
+
 
 }
 
 #theSelector-menu{
     background: white;
     font-family: 'Open Sans', sans-serif !important;
-    border-radius: 20px !important;
+
+    box-shadow: 6px 6px 15px grey;
+}
+
+#theSelector-button{
+    border: none;
+    outline: none;
+    border-radius: 20px;
 }
 
 
@@ -78,7 +143,7 @@ body{
     box-shadow: 6px 6px 15px grey;
     background: white!important;
     font-family: 'Open Sans', sans-serif !important;
-    border-radius: 20px !important;
+    border: none;
 }
 
 
