@@ -43,6 +43,7 @@ body{
 #bigTitle{
     color: white;
     font-size: 40px;
+
 }
 
 #smallerTitle{
@@ -54,15 +55,33 @@ body{
     display: flex;
     flex: 1;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+
 }
 
-#theSelector{
-    border-radius: 5px;
-    border-style: none;
-    box-shadow: 5px 5px 5px;
+
+.ui-selectmenu-menu{
+    box-shadow: 6px 6px 15px grey;
+
 }
+
+#theSelector-menu{
+    background: white;
+    font-family: 'Open Sans', sans-serif !important;
+    border-radius: 20px !important;
+}
+
+
+
+.ui-selectmenu-button{
+    box-shadow: 6px 6px 15px grey;
+    background: white!important;
+    font-family: 'Open Sans', sans-serif !important;
+    border-radius: 20px !important;
+}
+
+
 
 
 
