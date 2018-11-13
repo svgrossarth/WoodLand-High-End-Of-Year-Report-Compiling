@@ -6,10 +6,11 @@
 
 $( document ).ready(function() {
 
+
+
     var XLSX = require('xlsx');
 
     const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
-        "Update ETS Roster", "Update Migrant Ed Roster", "Update PTS Roster", "Update ELD Roster",
         "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report"];
 
 
@@ -49,10 +50,10 @@ $( document ).ready(function() {
             if (prop == "periodAttendance" && theSelector.value === arrayOfPossibleChoices[0]) {
                 let sheetAr = TotalCount(objSheetAr["periodAttendance"]);
                 CreateNewExcel(sheetAr, "TotalCountReport.xlsx")
-            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[7]){
+            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[3]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"]);
                 CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
-            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[8]){
+            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[4]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"]);
                 CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
             } else if(prop == "ariesQuery" && value !="" && obj["etsRoster"] == "" && obj["ptsRoster"] == "" && obj["migRoster"] == "" && obj["eldRoster"] == ""){
@@ -154,27 +155,31 @@ $( document ).ready(function() {
     }
 
     function removePeriodFromClass(objectContainer) {
-        let justClass = "";
-        let longClass = "";
-        justClass = objectContainer["Subject"].split("-");
-        if(justClass.length > 2){
-            for(let i = 0; i < justClass.length - 1; i++){
-                if(i === 0) {
-                    longClass += justClass[i + 1].trim();
-                }else{
-                    longClass += " - " + justClass[i + 1];//note English 1 - 2 has spaces while Pre-Calculus doesn't,
-                    // here Pre-Calculus will now be Pre - Calculus
+        if(objectContainer["Subject"] !== undefined) {
+            let justClass = "";
+            let longClass = "";
+
+            justClass = objectContainer["Subject"].split("-");
+
+            if (justClass.length > 2) {
+                for (let i = 0; i < justClass.length - 1; i++) {
+                    if (i === 0) {
+                        longClass += justClass[i + 1].trim();
+                    } else {
+                        longClass += " - " + justClass[i + 1];//note English 1 - 2 has spaces while Pre-Calculus doesn't,
+                        // here Pre-Calculus will now be Pre - Calculus
+                    }
                 }
+                justClass = longClass;
+
+            } else if (justClass[1]) {
+                justClass = justClass[1].trim();
+            } else {
+                justClass = justClass[0].trim();
             }
-            justClass = longClass;
 
-        }else if(justClass[1]){
-            justClass = justClass[1].trim() ;
-        }else{
-            justClass = justClass[0].trim();
+            objectContainer["Subject"] = justClass;
         }
-
-        objectContainer["Subject"] = justClass;
 
     }
 
@@ -190,6 +195,7 @@ $( document ).ready(function() {
 
         if(alreadyBeenCounted){
             removePeriodFromClass(periodAttendanceRow);
+
             removeSubjectDuplicates(ASSETsAr[i], periodAttendanceRow, "Subject");
             if(periodAttendanceRow["Other Subject"]){
                 ASSETsAr[i]["Subject"] += ", " + periodAttendanceRow["Other Subject"];
@@ -219,6 +225,7 @@ $( document ).ready(function() {
             studentOb.Grade = periodAttendanceRow["Grade"];
             studentOb.StudentID = periodAttendanceRow["Student ID"];
             studentOb.StudentName = periodAttendanceRow["First Name"] + " " + periodAttendanceRow["Last Name"];
+
             removePeriodFromClass(periodAttendanceRow);
             studentOb.Subject = periodAttendanceRow["Subject"];
             if(periodAttendanceRow["Other Subject"]){
@@ -251,7 +258,6 @@ $( document ).ready(function() {
 
         if(period === "Lunch" && periodAttendanceRow["Period"] === "Lunch") {
             studentOb = BuildStudentOb(ASSETsAr, periodAttendanceRow, dayOfTheMonth, "Lunch", counter);
-
         }else if(period === "After School" && periodAttendanceRow["Period"] === "After School") {
             studentOb = BuildStudentOb(ASSETsAr, periodAttendanceRow, dayOfTheMonth, "After School", counter);
 
@@ -268,13 +274,13 @@ $( document ).ready(function() {
         for(let i = 0; i < periodAttendance.length; i++){
             if(periodAttendance[i]["Student ID"] !== undefined) {
                 let theStudent;
-                if (theSelector.value === arrayOfPossibleChoices[7]) {
+                if (theSelector.value === arrayOfPossibleChoices[3]) {
                     theStudent = BuildASSETs(periodAttendance[i], "Lunch", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
                         ASSETsAr.push(theStudent);
                     }
-                } else if (theSelector.value === arrayOfPossibleChoices[8]) {
+                } else if (theSelector.value === arrayOfPossibleChoices[4]) {
                     theStudent = BuildASSETs(periodAttendance[i], "After School", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
@@ -339,8 +345,10 @@ $( document ).ready(function() {
 
 //creates the Submit button
     function TheButGenerator(){
-
-        return $('<button type="button" id="submitButton">Submit</button>').click(DetermineRequest);
+        return $('<button type="button" id="submitButton">Submit</button>').click(async function (){
+            $('*').css('cursor', 'wait');
+            setTimeout(DetermineRequest, 25);
+        });
 
 
        /* var theSubBut = document.createElement("button");
@@ -354,6 +362,7 @@ $( document ).ready(function() {
 
 //Run after the user hits submit
     function DetermineRequest() {
+
         if(theSelector.value == arrayOfPossibleChoices[0]){
             GetSingleFile("periodAttendance");
 
@@ -363,9 +372,9 @@ $( document ).ready(function() {
 
         }else if(theSelector.value == arrayOfPossibleChoices[2]){
             GetEachProgramRoster();
-        }else if(theSelector.value === arrayOfPossibleChoices[7]){
+        }else if(theSelector.value === arrayOfPossibleChoices[3]){
             GetSingleFile("periodAttendance");
-        }else if(theSelector.value === arrayOfPossibleChoices[8]){
+        }else if(theSelector.value === arrayOfPossibleChoices[4]){
             GetSingleFile("periodAttendance");
         }
     }
@@ -373,7 +382,7 @@ $( document ).ready(function() {
 //Pulls the different files and converts each
     function GetEachProgramRoster() {
         var alignerDiv = document.getElementById("aligner");
-        var numOfFiles = alignerDiv.children.length;
+        var numOfFiles = alignerDiv.children.length - 1;
         var arOfInputs = alignerDiv.children;
         for(var i = 0; i < numOfFiles; i++){(function (file, i){
             var reader = new FileReader();
@@ -386,7 +395,7 @@ $( document ).ready(function() {
             };
             reader.readAsArrayBuffer(file);
 
-        })(arOfInputs[i].children[0].files[0], i)}
+        })(arOfInputs[i].children[1].files[0], i)}
     }
 
 
@@ -539,6 +548,7 @@ $( document ).ready(function() {
         $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv' + i));
         $(newInnerInput).append($('<div class="textDiv"></div>').attr('id', 'text' + i));
         let newText = '#text' + i;
+        $(newText).append(textNodeArray[i]);
         $(newText).after($('<input type="file" class="fileInputDiv">').attr('id', 'fileInput' + i));
         let newFileInput = '#fileInput' + i;
         $(newFileInput).after($('<label  class="labels" > Choose a file' +
@@ -608,52 +618,24 @@ $( document ).ready(function() {
             document.getElementById("innerInputDiv0").appendChild(theSubBut);*/
         }else if(theSelector.value == arrayOfPossibleChoices[1]){
             AttachInputTextInital(textNode);
-            var theSubBut = TheButGenerator();
-            document.getElementById("innerInputDiv0").appendChild(theSubBut);
+            $('#innerInputDiv0').after(TheButGenerator());
         } else if(theSelector.value == arrayOfPossibleChoices[2]){
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
             AttachInputTextRec(textNodeArray, 1, 2);
-
-        }else if(theSelector.value == arrayOfPossibleChoices[3]){
-            var textNode1 = document.createTextNode("Please Select ETS Roster");
-            textNodeArray.push(textNode1);
-            AttachInputTextInital(textNode);
-            AttachInputTextRec(textNodeArray, 1, 2);
-
-        }else if(theSelector.value == arrayOfPossibleChoices[4]){
-            var textNode1 = document.createTextNode("Please Select Migrant Ed Roster");
-            textNodeArray.push(textNode1);
-            AttachInputTextInital(textNode);
-            AttachInputTextRec(textNodeArray, 1, 2);
-
-        }else if(theSelector.value == arrayOfPossibleChoices[5]){
-            var textNode1 = document.createTextNode("Please Select PTS Roster");
-            textNodeArray.push(textNode1);
-            AttachInputTextInital(textNode);
-            AttachInputTextRec(textNodeArray, 1, 2);
-
-        }else if(theSelector.value == arrayOfPossibleChoices[6]){
-            var textNode1 = document.createTextNode("Please Select ELD Roster");
-            textNodeArray.push(textNode1);
-            AttachInputTextInital(textNode);
-            AttachInputTextRec(textNodeArray, 1, 2);
-
-        }else if(theSelector.value === arrayOfPossibleChoices[7]){
+        }else if(theSelector.value === arrayOfPossibleChoices[3]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             //AttachMonthInput();
-            var theSubBut = TheButGenerator();
-            document.getElementById("innerInputDiv0").appendChild(theSubBut);
-        }else if(theSelector.value === arrayOfPossibleChoices[8]){
+            $('#innerInputDiv0').after(TheButGenerator());
+        }else if(theSelector.value === arrayOfPossibleChoices[4]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             //AttachMonthInput();
-            var theSubBut = TheButGenerator();
-            document.getElementById("innerInputDiv0").appendChild(theSubBut);
+            $('#innerInputDiv0').after(TheButGenerator());
         }
     }
 
@@ -852,9 +834,25 @@ $( document ).ready(function() {
     }
 
     function  UpdateUserAboutFile(newExcelname) {
-        let displayArea = document.getElementById("displayResults");
+        let displayResults = $('#displayResults');
+        displayResults.attr('class', 'messageOuter successMessageOuter');
+        displayResults.append('<div id="messageAwesomeFont"></div>');
+        $('#messageAwesomeFont').append('<i class="far fa-check-circle messageSymbol"></i>');
+        displayResults.append('<div id="successMessageInner" class="messageInner"></div>');
+        let successMesInner = $('#successMessageInner');
+        successMesInner.append('<div id="successMessageTitle" class="messageTitle"> Success </div>');
+        successMesInner.append('<div class="messageInMessage"></div>');
+        let theMessage = "Congratulations, " + newExcelname + " has been created!!!";
+        $('.messageInMessage').append(theMessage);
+        $("*").css("cursor", "default");
+
+
+
+
+
+       /* let displayArea = document.getElementById("displayResults");
         let displayText = document.createTextNode(newExcelname + " has been generated!");
-        displayArea.appendChild(displayText);
+        displayArea.appendChild(displayText);*/
 
     }
 

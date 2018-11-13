@@ -18,6 +18,7 @@ body{
     align-items: center;
     justify-items: center;
     flex: 1;
+
 }
 
 #selectorDiv{
@@ -55,7 +56,7 @@ body{
     font-family: 'Open Sans', sans-serif;
     color: black;
     background-color: white;
-    box-shadow: 6px 6px 15px grey;
+    box-shadow: 3px 3px 10px grey;
     display: inline-block;
     cursor: pointer; /* "hand" cursor */
     border-radius: 20px;
@@ -85,7 +86,7 @@ body{
     padding: 10px;
     border: none;
     outline: none;
-    box-shadow: 6px 6px 15px grey;
+    box-shadow: 3px 3px 10px grey;
 }
 
 .labels{
@@ -94,8 +95,13 @@ body{
 
 
 
-#displayResults{
-    font-size: 40px;
+#messageAwesomeFont{
+    padding: 10px;
+}
+
+.messageSymbol{
+    font-size: 50px;
+    color: white;
 }
 
 #bigTitle{
@@ -107,6 +113,8 @@ body{
 #smallerTitle{
     color: white;
     width: 80%;
+    display: flex;
+    justify-content: center;
 }
 
 #bigCenter{
@@ -128,7 +136,7 @@ body{
     background: white;
     font-family: 'Open Sans', sans-serif !important;
 
-    box-shadow: 6px 6px 15px grey;
+    box-shadow: 3px 3px 10px grey;
 }
 
 #theSelector-button{
@@ -140,14 +148,55 @@ body{
 
 
 .ui-selectmenu-button{
-    box-shadow: 6px 6px 15px grey;
+    box-shadow: 3px 3px 10px gray;
     background: white!important;
     font-family: 'Open Sans', sans-serif !important;
     border: none;
 }
 
 
+.displayBox{
 
+}
+
+.messageOuter{
+    display: flex;
+    flex-direction: row;
+    box-shadow: 3px 3px 10px gray;
+    margin-top: 10px;
+}
+
+.messageInner{
+    display: flex;
+    flex-direction: column;
+    padding: 3px 10px 10px 10px;
+
+}
+
+.messageTitle{
+    font-size: 25px;
+    font-weight: bold;
+
+}
+
+.successMessageOuter{
+    background: #38db32;
+
+}
+
+#successMessageInner{
+    background: white;
+
+}
+
+#successMessageTitle{
+    color: #38db32;
+
+}
+
+.errorMessage{
+
+}
 
 
 .flexGrow{
