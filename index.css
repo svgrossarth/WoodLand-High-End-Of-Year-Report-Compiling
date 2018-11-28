@@ -52,7 +52,9 @@ body{
     z-index: -1;
 }
 
-.fileInputDiv + label {
+
+
+ label {
     font-family: 'Open Sans', sans-serif;
     color: black;
     background-color: white;
@@ -77,8 +79,10 @@ body{
 
 }
 
+
 #submitButton{
     margin-top: 5px;
+    margin-bottom: 20px;
     background: #ffff99;
     border-radius: 20px;
     cursor: pointer;
@@ -93,6 +97,19 @@ body{
     margin-bottom: 5px;
 }
 
+
+#fileCount{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    box-shadow:3px 3px 10px grey;
+    border-radius: 30px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 6.4px 16px;
+    color: #454545;
+
+}
 
 
 #messageAwesomeFont{
@@ -110,11 +127,9 @@ body{
 
 }
 
-#smallerTitle{
+#smallerTitle {
     color: white;
     width: 80%;
-    display: flex;
-    justify-content: center;
 }
 
 #bigCenter{
@@ -130,6 +145,24 @@ body{
 .ui-selectmenu-menu{
 
 
+}
+
+
+
+
+#monthSelector-button{
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: none;
+    outline: none;
+    border-radius: 20px;
+}
+
+#monthSelector-menu{
+    background: white;
+    font-family: 'Open Sans', sans-serif !important;
+
+    box-shadow: 3px 3px 10px grey;
 }
 
 #theSelector-menu{

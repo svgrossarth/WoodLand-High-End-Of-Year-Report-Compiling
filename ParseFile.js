@@ -1,21 +1,24 @@
-
-
-
-
-
+//Created By
+//Spencer Grossarth 11/27/18
 
 $( document ).ready(function() {
 
-
-
+    /*Enables parsing of excel files*/
     var XLSX = require('xlsx');
 
+    /*Names of possible reports the user can select*/
     const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
-        "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report"];
+        "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report", "Monthly Migrant Ed Report"];
 
+    /*Saves user data entered after selecting report*/
+    var userEnteredData ={
+        month:"",
+        numberOfFiles:""
+    };
 
-    //Triggered when the user selects what they wish to generate
-
+    /*Initialized the JQuery select
+    * when the user selects the report they want
+    * UpdateDomForFilesSelection is called*/
     var theSelectorJQ = $('#theSelector');
     theSelectorJQ.selectmenu({
         position: {my: 'center top', at: 'center bottom'},
@@ -23,20 +26,16 @@ $( document ).ready(function() {
         width: 350
 
     });
-
     theSelectorJQ.css('background-color', 'blue');
-    //theSelector.css('box-shadow', '5px 5px 5px');
 
+
+    /*Accessing theSelector with none JQuery Functions*/
     var theSelector = $('#theSelector').get()[0];
 
-    // var theSelector =  document.getElementById("theSelector");
-    //theSelector.addEventListener('change', UpdateDOMForFileSelection);
-
-
-
-
+    /*Object is populated with jsons after excel sheet has been parsed
+    * and a json as been generated*/
     var objSheetAr = {
-        periodAttendance: "",
+        periodAttendance: new Array(),
         ariesQuery: "",
         etsRoster: "",
         ptsRoster: "",
@@ -44,50 +43,76 @@ $( document ).ready(function() {
         eldRoster: "",
     };
 
-//when objSheetAr has any of it's values changed the handler triggers
+
+    /*when objSheetAr has any of it's values changed the handler triggers.
+    * objSheetAr is only changed after the user has selected the files they want parsed
+    * and they are converted to jsons. Depending on what report the user has selected
+    *the appropriate if statement will be entered and the json will be parsed*/
     const theHandler = {
         set(obj, prop, value) {
-            if (prop == "periodAttendance" && theSelector.value === arrayOfPossibleChoices[0]) {
-                let sheetAr = TotalCount(objSheetAr["periodAttendance"]);
+            /*Total Count */
+            if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[0]) {
+                let sheetAr = TotalCount(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "TotalCountReport.xlsx")
+                /*ASSETs Lunch Report*/
             }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[3]){
-                let sheetAr = ASSETsReport(objSheetAr["periodAttendance"]);
+                let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
+                /*ASSETs After School Report*/
             }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[4]){
-                let sheetAr = ASSETsReport(objSheetAr["periodAttendance"]);
+                let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
-            } else if(prop == "ariesQuery" && value !="" && obj["etsRoster"] == "" && obj["ptsRoster"] == "" && obj["migRoster"] == "" && obj["eldRoster"] == ""){
-                var sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
+                /*Student Roster with out programs*/
+            } else if(prop === "ariesQuery" && value !=="" && obj["etsRoster"] === "" &&
+                obj["ptsRoster"] === "" && obj["migRoster"] === "" && obj["eldRoster"] === ""){
+
+                let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
                 CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
-            }else if(obj["ariesQuery"] != "" && obj["etsRoster"] != "" && obj["ptsRoster"] != "" && obj["migRoster"] != "" && obj["eldRoster"] != ""){
-                var sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
+                /*Student Roster WITH programs*/
+            }else if(obj["ariesQuery"] !== "" && obj["etsRoster"] !== "" &&
+                     obj["ptsRoster"] !== "" && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
+
+                let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
                 sheetAr = AddPrograms(sheetAr);
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
+            }else if(prop === "periodAttendance" && objSheetAr.periodAttendance.length === userEnteredData.numberOfFiles){
+                //now figure out how to handle each of the files, they are the same file I need to search for the correct month
+                console.log();
             }
         }
     };
 
+    /*this sets up the a proxy for objSheetAr.
+    * When the proxy is changed theHandler is called*/
     var theProxy = new Proxy(objSheetAr, theHandler);
 
 
-    //when the user clocks on the query options
+    /*This makes the edges look nice on theSelector and the monthSelector*/
     $('#theSelector-button').click(clickOnSelector);
-
+    function clickOnMonthSelector() {
+        $('#monthSelector-button').css('border-radius', '20px 20px 0px 0px');
+        $('#monthSelector-menu').css('border-radius', '0px 0px 20px 20px');
+        $('#monthSelector-button').click(unclickOnMonthSelector);
+        $('#monthSelector-menu').click(unclickOnMonthSelector);
+    }
+    function unclickOnMonthSelector() {
+        $('#monthSelector-button').css('border-radius', '20px');
+        $('#monthSelector-button').click(clickOnMonthSelector);
+    }
     function clickOnSelector() {
         $('#theSelector-button').css('border-radius', '20px 20px 0px 0px');
         $('#theSelector-menu').css('border-radius', '0px 0px 20px 20px');
         $('#theSelector-button').click(unclickOnSelector);
         $('#theSelector-menu').click(unclickOnSelector);
     }
-
     function unclickOnSelector() {
         $('#theSelector-button').css('border-radius', '20px');
         $('#theSelector-button').click(clickOnSelector);
     }
 
 
-
-
+    /*this is the Student object that is used when making
+    * some of the reports.*/
     function Student() {
 
         this.Count = "";
@@ -104,40 +129,44 @@ $( document ).ready(function() {
         }
     }
 
+
+    /*Converts time from hours, minuntes, and AM and PM to raw number.*/
     function Timez(timeString) {
-        let amPm = timeString.split(" ")[1];
-        let timeNums = timeString.split(" ")[0];
+        let amPm = timeString.split(" ")[1]; // if AM or PM
+        let timeNums = timeString.split(" ")[0];// Just the numbers
         let hour = timeNums.split(":")[0];
         let minutes = timeNums.split(":")[1];
         let partOfHour = 0;
         this.absoluteTime = 0;
+        /*Converts time for AM*/
         if(amPm === "AM"){
             partOfHour = minutes / 60;
             this.absoluteTime = Number(hour) + partOfHour;
-        }else {
+        }else { // Converts time for PM
             partOfHour = minutes / 60;
-            if(hour == 12){
+            if(hour === 12){
                 this.absoluteTime = Number(hour) + partOfHour;
             }else {
                 this.absoluteTime = 12 + Number(hour) + partOfHour;
             }
-
-
-
         }
-
     }
 
-
+    /*Calculates the amount of time a student spends after school
+    * rounded to the 15 minute intervals that are smaller or equal to
+    * the exact time spent in the center.*/
     function TimeInCenter(timeOut, timeIn) {
+        /*If no time out was entered say they stated for only 1 hour*/
         if(timeOut === ""){
             return 1;
         }
         let time_In = new Timez(timeIn);
         let time_out = new Timez(timeOut);
         let exactTime = time_out.absoluteTime - time_In.absoluteTime;
-        let wholeTime = parseInt(exactTime, 10);
-        let justDecimal = exactTime - wholeTime;
+        let wholeTime = parseInt(exactTime, 10); // removes minutes, just number of hours
+        let justDecimal = exactTime - wholeTime; // only the minutes
+
+        /*rounds the exact number of minutes to rounded 15 min intervals*/
         if(justDecimal >= 0 && .25 > justDecimal){
             justDecimal = 0;
         }else if(justDecimal >= .25 && .5 > justDecimal){
@@ -147,20 +176,28 @@ $( document ).ready(function() {
         }else if (justDecimal >= .75){
             justDecimal = .75;
         }
+        /*If wholeTime < 0 means the student left before they got here, so an error.
+         * It is treated as 1 hour. If wholeTime < 1 the student stayed less then 1 hour,
+          * we round up to an hour in that case.*/
         if((wholeTime < 0) || (wholeTime < 1)){
             return 1;
         }else {
-            return wholeTime + justDecimal;
+            return wholeTime + justDecimal; // Takes the number of hours and rounded minutes
         }
     }
 
+    /*Each class has a period at is front ex. 1 - Int Math II.
+    * This should be changed to ex. Int Math II. This function takes
+    * care of this.*/
     function removePeriodFromClass(objectContainer) {
+        /*Only entered if there IS a subject, else do nothing.*/
         if(objectContainer["Subject"] !== undefined) {
-            let justClass = "";
+            let justClass = ""; //
             let longClass = "";
-
-            justClass = objectContainer["Subject"].split("-");
-
+            justClass = objectContainer["Subject"].split("-"); // splits subject at each '-'
+            /*Entered if the class had an additional '-'
+            * ex. 2 - English 1 - 2
+            * rebuilds so it is ex. English 1- 2*/
             if (justClass.length > 2) {
                 for (let i = 0; i < justClass.length - 1; i++) {
                     if (i === 0) {
@@ -171,28 +208,33 @@ $( document ).ready(function() {
                     }
                 }
                 justClass = longClass;
-
+            /*A class with out an extra '-'
+            * ex. 4 - Calculus
+            * Becomes ex. Calculus*/
             } else if (justClass[1]) {
                 justClass = justClass[1].trim();
-            } else {
+            } else { // when subject is empty
                 justClass = justClass[0].trim();
             }
-
             objectContainer["Subject"] = justClass;
         }
-
     }
 
+    /*Builds up each student row for either of the ASSETs reports,
+     including what days of the month they came*/
     function BuildStudentOb (ASSETsAr, periodAttendanceRow, dayOfTheMonth, period, counter){
         let alreadyBeenCounted = false;
         let studentOb = new Student();
-        for(var i = 0; i < ASSETsAr.length; i++){
+        /*checks to to see if student has been counted already*/
+        for(let i = 0; i < ASSETsAr.length; i++){
             if(ASSETsAr[i].StudentID === periodAttendanceRow["Student ID"]){
                 alreadyBeenCounted = true;
                 break;
             }
         }
-
+        /*If a student has already been counted
+        * this make sure there are not duplicate subjects in
+        * their list of subjects and adds the day they were here*/
         if(alreadyBeenCounted){
             removePeriodFromClass(periodAttendanceRow);
 
@@ -204,14 +246,18 @@ $( document ).ready(function() {
             if(period === "Lunch"){
                 if(ASSETsAr[i][dayOfTheMonth] === ""){
                     ASSETsAr[i][dayOfTheMonth] = "1";
+                /*Checks for duplicates, i.e. same student,
+                * same day, same period*/
                 }else{
                     console.log("Duplicate Found!! for " + ASSETsAr[i]["StudentName"] + " on the " + dayOfTheMonth);
                     ASSETsAr[i][dayOfTheMonth] = "1";
                 }
-
             }else if(period === "After School"){
+
                 if(ASSETsAr[i][dayOfTheMonth] === ""){
                     ASSETsAr[i][dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                    /*Checks for duplicates, i.e. same student,
+                * same day, same period*/
                 }else{
                     console.log("Duplicate Found!! for " + ASSETsAr[i]["StudentName"] + " on the " + dayOfTheMonth);
                     ASSETsAr[i][dayOfTheMonth] += TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
@@ -219,19 +265,18 @@ $( document ).ready(function() {
 
             }
 
-
+        /*If the student has not been counted it makes
+        * a new student and adds the subject and when they were here*/
         }else {
             studentOb.Count = counter;
             studentOb.Grade = periodAttendanceRow["Grade"];
             studentOb.StudentID = periodAttendanceRow["Student ID"];
             studentOb.StudentName = periodAttendanceRow["First Name"] + " " + periodAttendanceRow["Last Name"];
-
             removePeriodFromClass(periodAttendanceRow);
             studentOb.Subject = periodAttendanceRow["Subject"];
             if(periodAttendanceRow["Other Subject"]){
                 studentOb.Subject += ", " + periodAttendanceRow["Other Subject"];
             }
-
             if(period === "Lunch"){
                 studentOb[dayOfTheMonth] = "1";
                 studentOb.Lunch = "Y";
@@ -240,48 +285,45 @@ $( document ).ready(function() {
                 studentOb[dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
 
             }
-
         }
-
         return studentOb;
-
     }
 
-
-    function BuildASSETs(periodAttendanceRow, period, counter, ASSETsAr) {
+    /*Calls function to build a student.
+    * This determins if the student is is being built for
+    * the lunch or after school report.*/
+    function InitializeStudentBuilder(periodAttendanceRow, period, counter, ASSETsAr) {
         let studentOb = new Student();
         let theDate = periodAttendanceRow.Date;
         let splitDate = theDate.split("/");
         let dayOfTheMonth = splitDate[1];
-
-
-
         if(period === "Lunch" && periodAttendanceRow["Period"] === "Lunch") {
             studentOb = BuildStudentOb(ASSETsAr, periodAttendanceRow, dayOfTheMonth, "Lunch", counter);
         }else if(period === "After School" && periodAttendanceRow["Period"] === "After School") {
             studentOb = BuildStudentOb(ASSETsAr, periodAttendanceRow, dayOfTheMonth, "After School", counter);
 
         }
-
         return studentOb;
-
     }
 
-
+    /*Builds the ASSETs report row by, one student at a time
+    * Used to build either the lunch or after school report*/
     function ASSETsReport(periodAttendance) {
         let ASSETsAr = [];
         let count = 1;
         for(let i = 0; i < periodAttendance.length; i++){
             if(periodAttendance[i]["Student ID"] !== undefined) {
                 let theStudent;
+                /*Lunch*/
                 if (theSelector.value === arrayOfPossibleChoices[3]) {
-                    theStudent = BuildASSETs(periodAttendance[i], "Lunch", count, ASSETsAr);
+                    theStudent = InitializeStudentBuilder(periodAttendance[i], "Lunch", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
                         ASSETsAr.push(theStudent);
                     }
+                    /*After School*/
                 } else if (theSelector.value === arrayOfPossibleChoices[4]) {
-                    theStudent = BuildASSETs(periodAttendance[i], "After School", count, ASSETsAr);
+                    theStudent = InitializeStudentBuilder(periodAttendance[i], "After School", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
                         ASSETsAr.push(theStudent);
@@ -292,16 +334,18 @@ $( document ).ready(function() {
         return ASSETsAr;
     }
 
-
+    /*Initializes the students programs to blank.*/
     function InsertPrograms(theStudent) {
         theStudent.ELD ="";
         theStudent.PTS ="";
         theStudent.ETS ="";
         theStudent.MIG ="";
-
     }
 
-
+    /*Checks if a particular student is in a program.
+    * If they are they get an X for that program.
+    * Additional Note: performance can be improved with
+    * search trees or something like that.*/
     function AddPrograms(sheetAr) {
         let ELDRoster = objSheetAr["eldRoster"];
         let ETSRoster = objSheetAr["etsRoster"];
@@ -309,6 +353,8 @@ $( document ).ready(function() {
         let MIGRoster = objSheetAr["migRoster"];
         for(let i = 0; i < sheetAr.length; i++){
             InsertPrograms(sheetAr[i]);
+            /*Checks if student is in ELD program,
+            * if they are it is noted*/
             for(let ELDIndex = 0; ELDIndex < ELDRoster.length; ELDIndex++){
                 if(sheetAr[i]["Student ID"] === ELDRoster[ELDIndex]["Student ID"]){
                     sheetAr[i]["ELD"] = "X";
@@ -316,6 +362,8 @@ $( document ).ready(function() {
                     break;
                 }
             }
+            /*Checks if student is in PTS program,
+            * if they are it is noted*/
             for(let PTSIndex = 0; PTSIndex < PTSRoster.length; PTSIndex++){
                 if(sheetAr[i]["Student ID"] === PTSRoster[PTSIndex]["Student ID"]){
                     sheetAr[i]["PTS"] = "X";
@@ -323,6 +371,8 @@ $( document ).ready(function() {
                     break;
                 }
             }
+            /*Checks if student is in ETS program,
+            * if they are it is noted*/
             for(let ETSIndex = 0; ETSIndex < ETSRoster.length; ETSIndex++){
                 if(sheetAr[i]["Student ID"] === ETSRoster[ETSIndex]["Student ID"]){
                     sheetAr[i]["ETS"] = "X";
@@ -330,6 +380,8 @@ $( document ).ready(function() {
                     break;
                 }
             }
+            /*Checks if student is in MIG program,
+            * if they are it is noted*/
             for(let MIGIndex = 0; MIGIndex < MIGRoster.length; MIGIndex++){
                 if(sheetAr[i]["Student ID"] === MIGRoster[MIGIndex]["Student ID"]){
                     sheetAr[i]["MIG"] = "X";
@@ -340,50 +392,84 @@ $( document ).ready(function() {
 
         }
         return sheetAr;
-
     }
 
-//creates the Submit button
-    function TheButGenerator(){
-        return $('<button type="button" id="submitButton">Submit</button>').click(async function (){
+    /*creates the Submit button*/
+    function TheButGenerator(text){
+        return $('<button type="button" id="submitButton">' + text +'</button>').click(function (){
             $('*').css('cursor', 'wait');
+            /*Causes a small delay
+            this delay is important because with out it
+            the 'wait' mouse never appears
+            DetermineRequest is the callback function
+            for when the user clicks the submit button*/
             setTimeout(DetermineRequest, 25);
-        });
-
-
-       /* var theSubBut = document.createElement("button");
-        theSubBut.setAttribute("id", "submitButton");
-        theSubBut.setAttribute("type", "button");
-        var theButText = document.createTextNode("Submit");
-        theSubBut.appendChild(theButText);
-        theSubBut.addEventListener("click", DetermineRequest);
-        return theSubBut;*/
+    });
     }
 
-//Run after the user hits submit
+    /*Run after the user hits submit*/
     function DetermineRequest() {
-
-        if(theSelector.value == arrayOfPossibleChoices[0]){
+        /*When giving information before selecting files.
+        * i.e. how many files need to be parsed or the month
+        * that needs to be parsed.*/
+        if($('#submitButton').text() === 'Next'){
+            userEnteredData.numberOfFiles = Number($('#fileCount').val());
+            userEnteredData.month= $('#monthSelector-button').text();
+            let textNode = 'Select Tutor Monthly Attendance';
+            let textNodeArray = new Array(userEnteredData.numberOfFiles);
+            clearHTMLAfterSelector();
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(textNodeArray, 1, userEnteredData.numberOfFiles);
+        /*Total Count*/
+        } else if(theSelector.value === arrayOfPossibleChoices[0]){
             GetSingleFile("periodAttendance");
-
-
-        }else if(theSelector.value == arrayOfPossibleChoices[1]){
+        /*Convert Aries Query Fall*/
+        }else if(theSelector.value === arrayOfPossibleChoices[1]){
             GetSingleFile("ariesQuery");
-
-        }else if(theSelector.value == arrayOfPossibleChoices[2]){
+        /*Convert Aries Query Fall With ALL Programs*/
+        }else if(theSelector.value === arrayOfPossibleChoices[2]){
             GetEachProgramRoster();
+        /*Monthly Lunch ASSETs Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
             GetSingleFile("periodAttendance");
+        /*Monthly After School ASSETs Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[4]){
             GetSingleFile("periodAttendance");
+        /*Monthly Migrant Ed Report*/
+        }else if(theSelector.value === arrayOfPossibleChoices[5]){
+            GetManyOfTheSameFile("periodAttendance")
         }
     }
 
-//Pulls the different files and converts each
+    /*Processing many excel sheets that the same
+    * i.e. 15 period attendance sheets*/
+    function GetManyOfTheSameFile(fileType) {
+        var alignerDiv = document.getElementById("aligner");
+        var numOfFiles = alignerDiv.children.length - 1;
+        var arOfInputs = alignerDiv.children;
+        /*Must be handled this way so each different file is handled
+        * not just the same one repeated several times*/
+        for(var i = 0; i < numOfFiles; i++){(function (file, i){
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                    ConvertSheetToJSON(e, 0, fileType);
+            };
+            reader.readAsArrayBuffer(file);
+
+        })(arOfInputs[i].children[1].files[0], i)}
+    }
+
+
+
+    /*Processing excel sheets that contain an
+    * aries query and then a sheet containing all
+    * programs*/
     function GetEachProgramRoster() {
         var alignerDiv = document.getElementById("aligner");
         var numOfFiles = alignerDiv.children.length - 1;
         var arOfInputs = alignerDiv.children;
+        /*Must be handled this way so each different file is handled
+        * not just the same one repeated several times*/
         for(var i = 0; i < numOfFiles; i++){(function (file, i){
             var reader = new FileReader();
             reader.onload = function (e) {
@@ -398,12 +484,18 @@ $( document ).ready(function() {
         })(arOfInputs[i].children[1].files[0], i)}
     }
 
-
+    /*Finds where the students start in excel sheet
+    * that postion is noted so that the worksheet can be
+    * parsed from that point on, disregarding
+    * rows above that*/
     function CorrectHeaders(workSheet) {
         let initalJSON = XLSX.utils.sheet_to_json(workSheet);
         for(var i = 0; i < initalJSON.length; i++) {
             let getOut = false;
             for (cell in initalJSON[i]) {
+                /*if cell containing "Student ID" is found, break
+                * out of this loop and the out, we have found
+                * what we are looking for*/
                 if (initalJSON[i][cell] === "Student ID") {
                     getOut = !getOut;
                     break;
@@ -413,45 +505,58 @@ $( document ).ready(function() {
                 break;
             }
         }
+        /* This produces a json starting at the point we know is the beginning of the students*/
         let correctJSON = XLSX.utils.sheet_to_json(workSheet, {range: i + 1});
         return correctJSON;
     }
 
+    /*Resents main page to original state*/
+    function clearHTMLAfterSelector() {
+        $('#aligner').empty();
+        $('#aligner').append('<div id="innerInputDiv0" class="innerInputDiv">');
+        $("*").css("cursor", "default");
+    }
+
+    /*Takes in one excel worksheet that contains one
+    * of the program rosters.*/
     function ConvertSheetToJSONAllPrograms(e){
-        var data = e.target.result;
+        let data = e.target.result;
         data = new Uint8Array(data);
-        var workBook = XLSX.read(data, {type: 'array'});
-        var arSheets = workBook.SheetNames;
+        let workBook = XLSX.read(data, {type: 'array'});
+        let arSheets = workBook.SheetNames;
+        let workSheet;
+        let json;
+        /*Checks if the sheet names contains a certain programs acronym
+        * if it does get the json by finding the start of the students
+        * and assign the resulting json to global object and assign it to
+        * the proxy*/
         for(sheet in arSheets){
             if(arSheets[sheet].includes("ELD")){
-                var workSheet = workBook.Sheets[arSheets[sheet]];
-                var json = CorrectHeaders(workSheet);
+                workSheet = workBook.Sheets[arSheets[sheet]];
+                json = CorrectHeaders(workSheet);
                 objSheetAr["eldRoster"] = json;
                 theProxy["eldRoster"] = json;
             }else if(arSheets[sheet].includes("ME")){
-                var workSheet = workBook.Sheets[arSheets[sheet]];
-                var json = CorrectHeaders(workSheet);
+                workSheet = workBook.Sheets[arSheets[sheet]];
+                json = CorrectHeaders(workSheet);
                 objSheetAr["migRoster"] = json;
                 theProxy["migRoster"] = json;
-
             }else if(arSheets[sheet].includes("ETS")){
-                var workSheet = workBook.Sheets[arSheets[sheet]];
-                var json = CorrectHeaders(workSheet);
+                workSheet = workBook.Sheets[arSheets[sheet]];
+                json = CorrectHeaders(workSheet);
                 objSheetAr["etsRoster"] = json;
                 theProxy["etsRoster"] = json;
-
             }else if(arSheets[sheet].includes("PTS")){
-                var workSheet = workBook.Sheets[arSheets[sheet]];
-                var json = CorrectHeaders(workSheet);
+                workSheet = workBook.Sheets[arSheets[sheet]];
+                json = CorrectHeaders(workSheet);
                 objSheetAr["ptsRoster"] = json;
                 theProxy["ptsRoster"] = json;
-
             }
         }
-
     }
 
-//takes in the single file submitted by the user to then convert to a JSON
+    /*takes in the single file submitted by the user then reads it then
+     then calls a function to convert it to a JSON*/
     function GetSingleFile(sheetName){
         var file = document.getElementById("fileInput0").files[0];
         var reader = new FileReader();
@@ -463,145 +568,97 @@ $( document ).ready(function() {
 
     }
 
-   /* function UploadButtonPush(nameOfButtonPushed) {
-        $(nameOfButtonPushed).css('background', 'white');
-
-
-
-    }*/
-
+    /*After user clicks on an upload button
+    * the text on that button changes to the
+    * file that was selected */
     function ChangeFileUploadButton(inputName,nameOfButtonPushed) {
         var fileName = $(inputName)[0].files[0]['name'];
         $(nameOfButtonPushed).text('You Selected: '+ fileName);
-
-        // var file = document.getElementById(inputName).files[0];
     }
 
+    /*After user has selected the report they want generated
+    * this makes the first file upload button and title*/
     function AttachInputTextInital(textNode){
-        $('#innerInputDiv0').append('<div id="text0" class="textDiv"></div>');
+        $('#innerInputDiv0').append('<div id="text0" class="textDiv"></div>'); // Type of file to upload
         $('#text0').append(textNode);
-        $('#text0').after('<input type="file" id="fileInput0" class="fileInputDiv">');
+        $('#text0').after('<input type="file" id="fileInput0" class="fileInputDiv">'); // Actual file uplad button
+        /* Label that allows styling of file upload button */
         $('#fileInput0').after('<label for="fileInput0" class="labels" id="fileInput0Label"> Choose a file</label>');
-        var labelName = '#fileInput0Label';
-        var inputName = '#fileInput0';
-        $('#fileInput0Label').prepend('<i class="fas fa-upload"></i>');
-
-        /*$('.fileInputDiv').click(function () {
-            UploadButtonPush(labelName);
-        });*/
+        let labelName = '#fileInput0Label';
+        let inputName = '#fileInput0';
+        $('#fileInput0Label').prepend('<i class="fas fa-upload"></i>'); // upload icon
+        /* changes text on upload button to name of file uploading*/
         $('#fileInput0').change(function () {
             ChangeFileUploadButton(inputName,labelName);
         });
-
-
-
-       /* $('#innerInputDiv0').append('<div id="text1"></div>');
-        $('#text1').css({'padding-left': '5px',
-            'padding-right': '5px',
-            'color': 'white',
-            'font-size': '20px'}).append(textNode);
-        $('#text1').after('<input type="file" id="fileInput0">');
-        $('fileInput0').after('<label for="file">Choose a file</label>')
-        $('#fileInput0').css({'border-style': 'solid', 'background': 'white'});*/
-
-
-
-
-
-
-      /*  var innerInputDiv0 = document.getElementById("innerInputDiv0");
-        var input = document.createElement("input");
-        input.setAttribute("type", "file");
-        input.setAttribute("id", "fileInput0");
-        input.style.borderStyle = "solid";
-        innerInputDiv0.appendChild(input);
-        var textDiv1 = document.createElement("Div");
-        textDiv1.setAttribute("id", "text1");
-        textDiv1.appendChild(textNode);
-        textDiv1.style.paddingLeft = "5px";
-        textDiv1.style.paddingRight = "5px";
-        innerInputDiv0.appendChild(textDiv1);*/
-
     }
 
-    function AttachInputTextRec(textNodeArray, i, totalNumFiles) {
-
-
-/*
-
-        $('#innerInputDiv0').append('<div id="text1" class="textDiv"></div>');
-        $('#text1').append(textNode);
-        $('#text1').after('<input type="file" id="fileInput0" class="fileInputDiv">');
-        $('#fileInput0').after('<label for="fileInput0" class="labels" id="fileInput0Label"> Choose a file</label>');
-        var labelName = '#fileInput0Label';
-        var inputName = '#fileInput0';
-        $('#fileInput0Label').prepend('<i class="fas fa-upload"></i>');
-
-        $('.fileInputDiv').click(function () {
-            UploadButtonPush(labelName);
-        });
-        $('#fileInput0').change(function () {
-            ChangeFileUploadButton(inputName,labelName);
-        });
-*/
-        let newInnerInput = '#innerInputDiv' + i;
-        $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv' + i));
-        $(newInnerInput).append($('<div class="textDiv"></div>').attr('id', 'text' + i));
-        let newText = '#text' + i;
-        $(newText).append(textNodeArray[i]);
-        $(newText).after($('<input type="file" class="fileInputDiv">').attr('id', 'fileInput' + i));
-        let newFileInput = '#fileInput' + i;
-        $(newFileInput).after($('<label  class="labels" > Choose a file' +
-            '</label>').attr({'for': 'fileInput' + i, 'id': 'fileInput' + i + 'Label'}));
-        let inputName = '#fileInput' + i;
-        let newLabel = '#fileInput' + i + 'Label';
-        $(newLabel).prepend('<i class="fas fa-upload"></i>');
-
-        /*$('.fileInputDiv').click(function () {
-            UploadButtonPush(labelName);
-        });*/
-        $(inputName).change(function () {
-            ChangeFileUploadButton(inputName, newLabel);
-        });
-
-
-
-
-
-      /*  var alignerDiv = document.getElementById("aligner");
-        var innerInputDiv = document.createElement("div");
-        innerInputDiv.setAttribute("id","innerInputDiv" + i);
-        innerInputDiv.style.display = "flex";
-        innerInputDiv.style.flexDirection = "row";
-        alignerDiv.appendChild(innerInputDiv);
-        var innerFileInput = document.createElement("input");
-        innerFileInput.setAttribute("type", "file");
-        innerFileInput.setAttribute("id", "fileInput" + i);
-        innerFileInput.style.borderStyle = "solid";
-        innerInputDiv.appendChild(innerFileInput);
-        var newTextDiv = document.createElement("Div");
-        newTextDiv.setAttribute("id", "text" + i + 1);
-        newTextDiv.style.paddingLeft = "5px";
-        newTextDiv.style.paddingRight = "5px";
-        newTextDiv.appendChild(textNodeArray[i]);
-        innerInputDiv.appendChild(newTextDiv);
-        var fileInput = document.getElementById("fileInput" + i + 1);*/
-
-        if(i === totalNumFiles - 1){
-            /*var theSubBut = TheButGenerator();
-            innerInputDiv.appendChild(theSubBut);
-*/
-            $(newInnerInput).after(TheButGenerator());
-
+    /*Attaches all upload buttons and names after the initial*/
+    function AttachInputTextMultiple(textNodeArray, i, totalNumFiles) {
+        /*this is for attaching one title and multiple upload buttons.
+        * This is used when uploading multiple files of the same type,
+        * i.e. 15 tutor logs*/
+        if(textNodeArray.length === undefined){
+            for(i; i < totalNumFiles; i++){
+                let newInnerInput = '#innerInputDiv' + i;
+                /*Div containing an upload button and its title*/
+                $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv' + i));
+                /*upload button*/
+                $('#innerInputDiv' + i).append($('<input type="file" class="fileInputDiv">').attr('id', 'fileInput' + i));
+                let newFileInput = '#fileInput' + i;
+                /*label for upload button, so it can be styled*/
+                $(newFileInput).after($('<label  class="labels" > Choose a file' +
+                    '</label>').attr({'for': 'fileInput' + i, 'id': 'fileInput' + i + 'Label'}));
+                let inputName = '#fileInput' + i;
+                let newLabel = '#fileInput' + i + 'Label';
+                $(newLabel).prepend('<i class="fas fa-upload"></i>'); // upload icon
+                /*call back function that changes name of upload button to file being uploaded*/
+                $(inputName).change(function () {
+                    ChangeFileUploadButton(inputName, newLabel);
+                });
+                /*when the appropriate number of upload file
+                * buttons have been generated, attach the
+                * submit button to the end.
+                * ***This might need to be changed later, when we need to***
+                * ***upload many of 2 types of files*** */
+                if(i === totalNumFiles - 1){
+                    $(newInnerInput).after(TheButGenerator("Submit"));
+                }
+            }
+            /*when attaching many upload buttons
+            * for different types of files. */
         }else{
-            i++;
-            AttachInputTextRec(textNodeArray, i, totalNumFiles);
+            for(i; i < totalNumFiles; i++){
+                let newInnerInput = '#innerInputDiv' + i;
+                /*Div containing an upload button and its title*/
+                $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv' + i));
+                $(newInnerInput).append($('<div class="textDiv"></div>').attr('id', 'text' + i));
+                /*type of file to upload*/
+                let newText = '#text' + i;
+                $(newText).append(textNodeArray[i]);
+                /*upload button*/
+                $(newText).after($('<input type="file" class="fileInputDiv">').attr('id', 'fileInput' + i));
+                let newFileInput = '#fileInput' + i;
+                /*label for upload button, so it can be styled*/
+                $(newFileInput).after($('<label  class="labels" > Choose a file' +
+                    '</label>').attr({'for': 'fileInput' + i, 'id': 'fileInput' + i + 'Label'}));
+                let inputName = '#fileInput' + i;
+                let newLabel = '#fileInput' + i + 'Label';
+                $(newLabel).prepend('<i class="fas fa-upload"></i>'); // upload icon
+                /*call back function that changes name of upload button to file being uploaded*/
+                $(inputName).change(function () {
+                    ChangeFileUploadButton(inputName, newLabel);
+                });
+                /*when the appropriate number of upload file
+                * buttons have been generated, attach the
+                * submit button to the end.*/
+                if(i === totalNumFiles - 1){
+                    $(newInnerInput).after(TheButGenerator("Submit"));
+                }
+            }
         }
-
-
-
     }
-
+    //When the user selects something off the theSelector
 //Allows user to select which files they wish to use to generate the report
     function UpdateDOMForFileSelection(e) {
         var textNodeArray = [];
@@ -612,31 +669,117 @@ $( document ).ready(function() {
             AttachInputTextInital(textNodeAttendance);
 
 
-            $('#innerInputDiv0').after(TheButGenerator());
+            $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
             /*var theSubBut = TheButGenerator();
             document.getElementById("innerInputDiv0").appendChild(theSubBut);*/
         }else if(theSelector.value == arrayOfPossibleChoices[1]){
             AttachInputTextInital(textNode);
-            $('#innerInputDiv0').after(TheButGenerator());
+            $('#innerInputDiv0').after(TheButGenerator("Submit"));
         } else if(theSelector.value == arrayOfPossibleChoices[2]){
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
-            AttachInputTextRec(textNodeArray, 1, 2);
+            AttachInputTextMultiple(textNodeArray, 1, 2);
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             //AttachMonthInput();
-            $('#innerInputDiv0').after(TheButGenerator());
+            $('#innerInputDiv0').after(TheButGenerator("Submit"));
         }else if(theSelector.value === arrayOfPossibleChoices[4]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             //AttachMonthInput();
-            $('#innerInputDiv0').after(TheButGenerator());
+            $('#innerInputDiv0').after(TheButGenerator("Submit"));
+        }else if(theSelector.value === arrayOfPossibleChoices[5]){
+            CountOfFiles("Number Of Tutor Logs To Be Used In Report");
+            MonthWanted();
+            $('#innerInputDiv1').after(TheButGenerator("Next"));
         }
+    }
+    
+    
+    
+    function CountOfFiles(text) {
+        let textNode = "<p>" + text + "</p>";
+        $('#innerInputDiv0').append('<div id="text0" class="textDiv"></div>');
+        $('#text0').append(text);
+        $('#text0').after('<input type="number" id="fileCount" min="1">');
+        /*$('#fileCount').after('<label for="fileCount" class="labels" id="fileCountLabel"></label>');
+        $('#fileCountLabel').css('width': '30px');*/
+
+
+
+       /* $('#innerInputDiv0').append();
+        $('#text0').append(textNode);
+        $('#text0').after('<input type="file" id="fileInput0" class="fileInputDiv">');
+        $('#fileInput0').after('<label for="fileInput0" class="labels" id="fileInput0Label"> Choose a file</label>');
+        var labelName = '#fileInput0Label';
+        var inputName = '#fileInput0';
+        $('#fileInput0Label').prepend('<i class="fas fa-upload"></i>');
+
+        /!*$('.fileInputDiv').click(function () {
+            UploadButtonPush(labelName);
+        });*!/
+        $('#fileInput0').change(function () {
+            ChangeFileUploadButton(inputName,labelName);
+        });*/
+
+    }
+    
+    function MonthWanted() {
+        let newInnerInput = '#innerInputDiv1';
+        $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv1'));
+        $(newInnerInput).append($('<div class="textDiv"></div>').attr('id', 'text1'));
+        let newText = '#text1';
+        $(newText).append('Month');
+        $(newText).after($('<select id="monthSelector">' +
+            '<option></option>' +
+            '<option> January </option>' +
+            '<option> February </option>' +
+            '<option> March </option>' +
+            '<option> April </option>' +
+            '<option> May </option>' +
+            '<option> June </option>' +
+            '<option> July </option>' +
+            '<option> August </option>' +
+            '<option> September </option>' +
+            '<option> October </option>' +
+            '<option> November </option>' +
+            '<option> December </option>' +
+                '</select>'));
+        $('#monthSelector').selectmenu({
+                position: {my: 'center top', at: 'center bottom'},
+                width: 150
+            })
+
+        $('#monthSelector-button').click(clickOnMonthSelector);
+
+
+
+        /*  let newInnerInput = '#innerInputDiv' + i;
+          $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv' + i));
+          $(newInnerInput).append($('<div class="textDiv"></div>').attr('id', 'text' + i));
+          let newText = '#text' + i;
+          $(newText).append(textNodeArray[i]);
+          $(newText).after($('<input type="file" class="fileInputDiv">').attr('id', 'fileInput' + i));
+          let newFileInput = '#fileInput' + i;
+          $(newFileInput).after($('<label  class="labels" > Choose a file' +
+              '</label>').attr({'for': 'fileInput' + i, 'id': 'fileInput' + i + 'Label'}));
+          let inputName = '#fileInput' + i;
+          let newLabel = '#fileInput' + i + 'Label';
+          $(newLabel).prepend('<i class="fas fa-upload"></i>');
+
+          /!*$('.fileInputDiv').click(function () {
+              UploadButtonPush(labelName);
+          });*!/
+          $(inputName).change(function () {
+              ChangeFileUploadButton(inputName, newLabel);
+          });*/
+
+
     }
 
 
@@ -808,8 +951,15 @@ $( document ).ready(function() {
         var arSheets = workBook.SheetNames;
         var workSheet = workBook.Sheets[arSheets[correctSheet]];
         var json = XLSX.utils.sheet_to_json(workSheet);
-        objSheetAr[sheetname] = json;
-        theProxy[sheetname] = json;
+        if(sheetname === "periodAttendance") {
+            objSheetAr[sheetname].push(json);
+            theProxy[sheetname] = 5; // this need to be literally anything it does
+            // actually change the original vector, but just notifies the handler that changes have been made
+        }else {
+            objSheetAr[sheetname] = json;
+            theProxy[sheetname] = json;
+        }
+
 
     }
 
