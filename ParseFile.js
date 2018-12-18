@@ -1,6 +1,8 @@
 //Created By
 //Spencer Grossarth 11/27/18
 
+/****To optimize the storage of sheets for searching store them as a binary search tree or a hash table****/
+
 $( document ).ready(function() {
 
     /*Enables parsing of excel files*/
@@ -658,77 +660,59 @@ $( document ).ready(function() {
             }
         }
     }
-    //When the user selects something off the theSelector
-//Allows user to select which files they wish to use to generate the report
+
+
+    /*Updates the DOM after user selects which report they want to make.*/
     function UpdateDOMForFileSelection(e) {
         var textNodeArray = [];
         var textNode = document.createTextNode("Please Select Aries Query");
         textNodeArray.push(textNode);
-        if(theSelector.value == arrayOfPossibleChoices[0]){
-            var textNodeAttendance = document.createTextNode("Please Select Attendance File");
+        /*Total Count*/
+        if(theSelector.value === arrayOfPossibleChoices[0]){
+            let textNodeAttendance = document.createTextNode("Please Select Attendance File");
             AttachInputTextInital(textNodeAttendance);
-
-
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
-
-            /*var theSubBut = TheButGenerator();
-            document.getElementById("innerInputDiv0").appendChild(theSubBut);*/
-        }else if(theSelector.value == arrayOfPossibleChoices[1]){
+            /*Convert Aries Query Fall*/
+        }else if(theSelector.value === arrayOfPossibleChoices[1]){
             AttachInputTextInital(textNode);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
-        } else if(theSelector.value == arrayOfPossibleChoices[2]){
+            /*Convert Aries Query Fall With ALL Programs*/
+        } else if(theSelector.value === arrayOfPossibleChoices[2]){
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(textNodeArray, 1, 2);
+            /*Monthly Lunch ASSETs Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
-            //AttachMonthInput();
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+            /*Monthly After School ASSETs Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[4]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
-            //AttachMonthInput();
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+            /*Monthly Migrant Ed Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[5]){
-            CountOfFiles("Number Of Tutor Logs To Be Used In Report");
+            NumOfFilesDesired("Number Of Tutor Logs To Be Used In Report");
             MonthWanted();
             $('#innerInputDiv1').after(TheButGenerator("Next"));
         }
     }
     
     
-    
-    function CountOfFiles(text) {
+    /*Updates DOM so user can enter the number of files they are going to
+    * upload for the report*/
+    function NumOfFilesDesired(text) {
         let textNode = "<p>" + text + "</p>";
         $('#innerInputDiv0').append('<div id="text0" class="textDiv"></div>');
         $('#text0').append(text);
         $('#text0').after('<input type="number" id="fileCount" min="1">');
-        /*$('#fileCount').after('<label for="fileCount" class="labels" id="fileCountLabel"></label>');
-        $('#fileCountLabel').css('width': '30px');*/
-
-
-
-       /* $('#innerInputDiv0').append();
-        $('#text0').append(textNode);
-        $('#text0').after('<input type="file" id="fileInput0" class="fileInputDiv">');
-        $('#fileInput0').after('<label for="fileInput0" class="labels" id="fileInput0Label"> Choose a file</label>');
-        var labelName = '#fileInput0Label';
-        var inputName = '#fileInput0';
-        $('#fileInput0Label').prepend('<i class="fas fa-upload"></i>');
-
-        /!*$('.fileInputDiv').click(function () {
-            UploadButtonPush(labelName);
-        });*!/
-        $('#fileInput0').change(function () {
-            ChangeFileUploadButton(inputName,labelName);
-        });*/
-
     }
-    
+
+    /*Updates DOM so user can select which month they are interested in*/
     function MonthWanted() {
         let newInnerInput = '#innerInputDiv1';
         $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv1'));
@@ -754,55 +738,14 @@ $( document ).ready(function() {
                 position: {my: 'center top', at: 'center bottom'},
                 width: 150
             })
-
         $('#monthSelector-button').click(clickOnMonthSelector);
-
-
-
-        /*  let newInnerInput = '#innerInputDiv' + i;
-          $('#aligner').append($('<div class="innerInputDiv"></div>').attr('id', 'innerInputDiv' + i));
-          $(newInnerInput).append($('<div class="textDiv"></div>').attr('id', 'text' + i));
-          let newText = '#text' + i;
-          $(newText).append(textNodeArray[i]);
-          $(newText).after($('<input type="file" class="fileInputDiv">').attr('id', 'fileInput' + i));
-          let newFileInput = '#fileInput' + i;
-          $(newFileInput).after($('<label  class="labels" > Choose a file' +
-              '</label>').attr({'for': 'fileInput' + i, 'id': 'fileInput' + i + 'Label'}));
-          let inputName = '#fileInput' + i;
-          let newLabel = '#fileInput' + i + 'Label';
-          $(newLabel).prepend('<i class="fas fa-upload"></i>');
-
-          /!*$('.fileInputDiv').click(function () {
-              UploadButtonPush(labelName);
-          });*!/
-          $(inputName).change(function () {
-              ChangeFileUploadButton(inputName, newLabel);
-          });*/
-
-
     }
 
-
-
-    function AttachMonthInput() {
-        var textMonthInput = document.createTextNode("Please Enter Month As A Number")
-        var innerInputDiv0 = document.getElementById("innerInputDiv0");
-        var input = document.createElement("input");
-        input.setAttribute("type", "number");
-        input.setAttribute("min", "0");
-        input.setAttribute("id", "fileInput1");
-        input.style.borderStyle = "solid";
-        innerInputDiv0.appendChild(input);
-        var textDiv2 = document.createElement("Div");
-        textDiv2.setAttribute("id", "text2");
-        textDiv2.appendChild(textMonthInput);
-        textDiv2.style.paddingLeft = "5px";
-        textDiv2.style.paddingRight = "5px";
-        innerInputDiv0.appendChild(textDiv2);
-
-
-    }
-
+    /*First checks to see if the student has had the "count" property added
+    * to it, if not it is added.
+    * Second, when calculating how many times a student was tutored,
+    * certain info stored about there individual tutoring sessions
+    * are not important and are thus deleted here.*/
     function AddAndRemoveKeys(student) {
         AddCountOuter(student);
         delete student["Student Sign Out (Tutor Name)"];
@@ -817,27 +760,41 @@ $( document ).ready(function() {
 
     }
 
+    /*Concatenates the "Other Subject" values for a given student*/
     function ConcatenateOtherSubject(oldList, newList){
-        if(oldList["Other Subject"] === undefined && !(newList["Other Subject"] === undefined)) {
+        /*If the previous entry of the student doesn't have an "Other Subject" and the new one does*/
+        if(oldList["Other Subject"] === undefined && (newList["Other Subject"] !== undefined)) {
             oldList["Other Subject"] = newList["Other Subject"];
-        }else if(!(oldList["Other Subject"] === undefined) && !(newList["Other Subject"] === undefined)){
+        /*If previous entry has "Other Subject" and the new entry does as well*/
+        }else if(!(oldList["Other Subject"] === undefined) && (newList["Other Subject"] !== undefined)){
             oldList["Other Subject"] =  oldList["Other Subject"] + ", " + newList["Other Subject"];
         }
     }
 
 
+    /*Iterates through a sheet and calculates the total number of times
+    * each student was tutored.
+    * ***To optimize this store array in a binary search tree or hash table*** */
     function TotalCount (sheetAr){
+        /*Goes through each row in the sheet*/
         for(let i = 0; i < sheetAr.length; i++){
-            if(!(sheetAr[i]["Student ID"] === undefined)) {
+            if(sheetAr[i]["Student ID"] !== undefined) {
                 AddAndRemoveKeys(sheetAr[i]);
                 removePeriodFromClass(sheetAr[i]);
+                /*Inner loop that is used to compare each each row in the
+                * sheet to all other rows in it. In order to total the number
+                * of times the student was tutored*/
                 for (let j = 0; j < sheetAr.length; j++) {
-                    if (!(sheetAr[j]["Student ID"] === undefined)) {
+                    if (sheetAr[j]["Student ID"] !== undefined) {
                         if (sheetAr[i]["Student ID"] === sheetAr[j]["Student ID"]) {
+                            /*if it isn't the same row*/
                             if (i !== j) {
                                 removePeriodFromClass(sheetAr[j]);
                                 removeSubjectDuplicates(sheetAr[i], sheetAr[j], "Subject");
                                 ConcatenateOtherSubject(sheetAr[i], sheetAr[j]);
+                                /*Checks if "Count" exists in the given student
+                                * if it doesn't it is added and initialized to 1.
+                                * If it does it is incremented.*/
                                 let innerCount = CheckForCount(sheetAr[j]);
                                 if (innerCount) {
                                     sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + Number(sheetAr[j]["Count"]);
@@ -846,25 +803,32 @@ $( document ).ready(function() {
                                     sheetAr[i]["Count"] = Number(sheetAr[i]["Count"]) + 1;
                                 }
                                 sheetAr[i]["Count"] = sheetAr[i]["Count"].toString();
+                                /*removes the inner loop row, other rows don't
+                                * have to be compared to it over and over again
+                                * when we have already gotten the information for it*/
                                 sheetAr.splice(j, 1);
-                                console.log(sheetAr.length);
-                                j--;
+                                j--; //the index needs to be updated since there is one less row
                             }
                         }
                     }else{
+                        /*removes the inner loop row, other rows don't
+                         * have to be compared to it over and over again
+                         * when we have already gotten the information for it*/
                         sheetAr.splice(j, 1);
-                        j--;
+                        j--; //the index needs to be updated since there is one less row
                     }
                 }
             }else{
+                /*removes the outer loop row, when it doesn't have a student ID
+                * so we don't compare other rows to it over and over again.*/
                 sheetAr.splice(i, 1);
-                i--;
+                i--; //the index needs to be updated since there is one less row
             }
         }
         return sheetAr;
     }
 
-
+    /*Checks if the student has "Count".*/
     function CheckForCount(student) {
         const theKeys = Object.keys(student);
         let thereIsCount = false;
@@ -874,9 +838,10 @@ $( document ).ready(function() {
             }
         }
         return thereIsCount;
-
     }
 
+    /*If student doesn't have "Count", it is added
+    * to the student with the initialized to 1*/
     function AddCountOuter(student){
         let thereIsCount = CheckForCount(student);
         if(!thereIsCount){
@@ -884,26 +849,27 @@ $( document ).ready(function() {
         }
     }
 
+    /*Builds up the sheet so that it includes all the students
+    * classes (in the same row), and removes the duplicate rows*/
     function AriesQuery (sheetAr){
-        var keyword = "Class";
+        let keyword = "Class";
         for(let i = 0; i < sheetAr.length; i++){
             AddClassSlots(sheetAr[i], keyword);
-
             for(let j = 0; j < sheetAr.length; j++){
-                if(sheetAr[i]["Student ID"] == sheetAr[j]["Student ID"]){
-                    if(i != j){
-                        if(sheetAr[j]["Semester"] != "S"){
-                            var period = sheetAr[j]["Period"];
+                if(sheetAr[i]["Student ID"] === sheetAr[j]["Student ID"]){
+                    if(i !== j){
+                        if(sheetAr[j]["Semester"] !== "S"){
+                            let period = sheetAr[j]["Period"];
                             keyword = keyword + period;
+                            /*adds the class, with the period, to the appropriate class entry in the object*/
                             sheetAr[i][keyword] = period + " - " + sheetAr[j]["Course title"];
                             AVIDChecker(sheetAr[i], sheetAr[j]["Course title"]);
-                            sheetAr.splice(j, 1);
-                            console.log(sheetAr.length);
-                            j--;
+                            sheetAr.splice(j, 1); //removes row
+                            j--; // change index since a row was removed
                             keyword = "Class";
                         }else {
-                            sheetAr.splice(j, 1);
-                            j--;
+                            sheetAr.splice(j, 1); //removes row
+                            j--; // change index since a row was removed
                         }
                     }
                 }
@@ -912,6 +878,7 @@ $( document ).ready(function() {
         return sheetAr;
     }
 
+    /*Updates the object to to include all classes and adds the initial course*/
     function AddClassSlots(singleObject, keyword){
         singleObject.Class0 = "";
         singleObject.Class1 = "";
@@ -924,8 +891,9 @@ $( document ).ready(function() {
         singleObject.Class8 = "";
         singleObject.Class9 = "";
         singleObject.AVID = "";
-        var period = singleObject["Period"];
+        let period = singleObject["Period"];
         keyword = keyword + period;
+        /*Adds the initial course to the object*/
         singleObject[keyword] = period + " - " + singleObject["Course title"];
         AVIDChecker(singleObject, singleObject["Course title"]);
         delete singleObject["Course title"];
@@ -934,6 +902,7 @@ $( document ).ready(function() {
 
     }
 
+    /*checks the student has an AVID class, if it does it is noted*/
     function AVIDChecker(outLoopStudent, innerLoopSubject) {
         if(innerLoopSubject.includes("AVID")){
             outLoopStudent["AVID"] = "X";
