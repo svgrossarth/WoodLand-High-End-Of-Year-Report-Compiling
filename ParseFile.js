@@ -55,28 +55,31 @@ $( document ).ready(function() {
             /*Total Count */
             if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[0]) {
                 let sheetAr = TotalCount(objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "TotalCountReport.xlsx")
+                CreateNewExcel(sheetAr, "TotalCountReport.xlsx");
+
                 /*ASSETs Lunch Report*/
             }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[3]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
+
                 /*ASSETs After School Report*/
             }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[4]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
+
                 /*Student Roster with out programs*/
             } else if(prop === "ariesQuery" && value !=="" && obj["etsRoster"] === "" &&
                 obj["ptsRoster"] === "" && obj["migRoster"] === "" && obj["eldRoster"] === ""){
-
                 let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
                 CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
+
                 /*Student Roster WITH programs*/
             }else if(obj["ariesQuery"] !== "" && obj["etsRoster"] !== "" &&
                      obj["ptsRoster"] !== "" && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
-
                 let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
                 sheetAr = AddPrograms(sheetAr);
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
+
             }else if(prop === "periodAttendance" && objSheetAr.periodAttendance.length === userEnteredData.numberOfFiles){
                 //now figure out how to handle each of the files, they are the same file I need to search for the correct month
                 console.log();
@@ -907,36 +910,33 @@ $( document ).ready(function() {
         if(innerLoopSubject.includes("AVID")){
             outLoopStudent["AVID"] = "X";
         }
-
-
     }
 
-//Converts excel file to JSON and updates array with converted sheets and the proxy
+    /*Converts excel file to JSON and updates global array with converted sheets and the global proxy*/
     function ConvertSheetToJSON(e, correctSheet, sheetname) {
-
-        var data = e.target.result;
+        let data = e.target.result;
         data = new Uint8Array(data);
-        var workBook = XLSX.read(data, {type: 'array'});
-        var arSheets = workBook.SheetNames;
-        var workSheet = workBook.Sheets[arSheets[correctSheet]];
-        var json = XLSX.utils.sheet_to_json(workSheet);
+        let workBook = XLSX.read(data, {type: 'array'});
+        let arSheets = workBook.SheetNames;
+        let workSheet = workBook.Sheets[arSheets[correctSheet]];
+        let json = XLSX.utils.sheet_to_json(workSheet);
         if(sheetname === "periodAttendance") {
+            /*The global object needs to be changed to store
+            * the sheet array but the proxy just needs to have its value updated
+            * so that it will trigger the handler*/
             objSheetAr[sheetname].push(json);
-            theProxy[sheetname] = 5; // this need to be literally anything it does
-            // actually change the original vector, but just notifies the handler that changes have been made
+            theProxy[sheetname] = 5; // This need to be literally anything it does.
         }else {
             objSheetAr[sheetname] = json;
             theProxy[sheetname] = json;
         }
-
-
     }
 
-
-
-
-    function CreateNewExcel(sheetAr, newExcelName, specialSheet = false){
-        if(specialSheet){
+    /*After the given sheets have been parsed, here the result is
+    * turned in a new excel sheet and then workbook.*/
+    function CreateNewExcel(sheetAr, newExcelName, ASSETsReport = false){
+        if(ASSETsReport){
+            /*ASSETs reports need special headers for the columns*/
             var newSheet = XLSX.utils.json_to_sheet(sheetAr, {header:["Count","StudentName","Grade",
                     "StudentID","Lunch","1","2","3","4","5","6","7","8","9","10","11","12","13",
                     "14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31",
@@ -944,14 +944,16 @@ $( document ).ready(function() {
         }else {
             var newSheet = XLSX.utils.json_to_sheet(sheetAr);
         }
-
-        var newWorkBook = XLSX.utils.book_new();
-        var convertedSheet = "The compiled Sheet";
+        let newWorkBook = XLSX.utils.book_new();
+        let convertedSheet = "The compiled Sheet";
         XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
         XLSX.writeFile(newWorkBook, newExcelName);
         UpdateUserAboutFile(newExcelName);
     }
 
+    /*Updates the DOM to tell the user the final status of the
+    * file they are trying to create. Currently this only tells about success
+    * I still need to implement what happens there is an error.*/
     function  UpdateUserAboutFile(newExcelname) {
         let displayResults = $('#displayResults');
         displayResults.attr('class', 'messageOuter successMessageOuter');
@@ -964,47 +966,20 @@ $( document ).ready(function() {
         let theMessage = "Congratulations, " + newExcelname + " has been created!!!";
         $('.messageInMessage').append(theMessage);
         $("*").css("cursor", "default");
-
-
-
-
-
-       /* let displayArea = document.getElementById("displayResults");
-        let displayText = document.createTextNode(newExcelname + " has been generated!");
-        displayArea.appendChild(displayText);*/
-
     }
 
-    /*function removeSubjectDuplicates(sheetAr, i, j){
-        if(!(sheetAr[i]["Subject"] === undefined) && !(sheetAr[j]["Subject"] === undefined)) {
-            var outterLoopSubjects = sheetAr[i]["Subject"].split(",");
-            var innerLoopSubjects = sheetAr[j]["Subject"].split(",");
-            var newUniqueSubject = true;
-
-            for (let j2 = 0; j2 < innerLoopSubjects.length; j2++) {
-                for (let i2 = 0; i2 < outterLoopSubjects.length; i2++) {
-                    if (innerLoopSubjects[j2].trim() == outterLoopSubjects[i2].trim()) {
-                        newUniqueSubject = false;
-                        break;
-                    }
-                }
-
-                if (newUniqueSubject) {
-                    sheetAr[i]["Subject"] = sheetAr[i]["Subject"] + "," + innerLoopSubjects[j2].trim();
-                    outterLoopSubjects = sheetAr[i]["Subject"].split(",");
-                }
-
-                newUniqueSubject = true;
-            }
-        }
-    }*/
-
+    /*Checks current list of subjects for a given student against a new
+    * list of subjects for that students and adds any new, not already in the list,
+    * subjects to the current list.*/
     function removeSubjectDuplicates(orginalList, newList, keyword){
-        if(!(orginalList[keyword] === undefined) && !(newList[keyword] === undefined) && !(orginalList[keyword] === "") && !(newList[keyword] === "")) {
-            var outterLoopSubjects = orginalList[keyword].split(",");
-            var innerLoopSubjects = newList[keyword].split(",");
-            var newUniqueSubject = true;
-
+        /*Makes sure both lists exist and they both are not empty*/
+        if((orginalList[keyword] !== undefined) && (newList[keyword] !== undefined)
+            && (orginalList[keyword] !== "") && (newList[keyword] !== "")) {
+            let outterLoopSubjects = orginalList[keyword].split(",");
+            let innerLoopSubjects = newList[keyword].split(",");
+            let newUniqueSubject = true;
+            /*Compares current list of subjects to new list of subjects checking
+            * for a new unique subject*/
             for (let j2 = 0; j2 < innerLoopSubjects.length; j2++) {
                 for (let i2 = 0; i2 < outterLoopSubjects.length; i2++) {
                     if (innerLoopSubjects[j2].trim() === outterLoopSubjects[i2].trim()) {
@@ -1012,19 +987,13 @@ $( document ).ready(function() {
                         break;
                     }
                 }
-
                 if (newUniqueSubject) {
                     orginalList[keyword] = orginalList[keyword] + ", " + innerLoopSubjects[j2].trim();
                     outterLoopSubjects = orginalList[keyword].split(",");
                 }
-
                 newUniqueSubject = true;
             }
         }
     }
-
-
-
-
 });
 
