@@ -17,7 +17,8 @@ $( document ).ready(function() {
     /*Saves user data entered after selecting report*/
     var userEnteredData ={
         month:"",
-        numberOfFiles:""
+        numberOfUCDTutorFiles:"",
+        numberOfPeerTutorFiles:""
     };
 
     /*Initialized the JQuery select
@@ -84,9 +85,10 @@ $( document ).ready(function() {
                 sheetAr = AddPrograms(sheetAr);
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
                 /*Monthly Mig Report*/
-            }else if(prop === "tutorMonthlyLog" && objSheetAr.tutorMonthlyLog.length === userEnteredData.numberOfFiles){
-                //now figure out how to handle each of the files, they are the same file I need to search for the correct month
-                console.log();
+            }else if(prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[5]){
+                if(objSheetAr.tutorMonthlyLog.length > 1){
+                    var conatenatedSheet = ConcatenateSheets(objSheetAr.tutorMonthlyLog);
+                }
             }
         }
     };
@@ -193,6 +195,24 @@ $( document ).ready(function() {
         }else {
             return wholeTime + justDecimal; // Takes the number of hours and rounded minutes
         }
+    }
+
+
+
+
+    /*Takes each of the sheets of the same kind and combines them into on big one*/
+    function ConcatenateSheets(sheetsToCombine) {
+        let concatenatedSheets = sheetsToCombine[0];
+        //https://stackoverflow.com/questions/1374126/how-to-extend-an-existing-javascript-array-with-another-array-without-creating
+        /*Apply basically takes a function from some object, in this case a array
+        * and applies it to something else. Here I am applying it to arrays but in the normal way.
+        * I am pushing and entire array on to an existing array, I am not just pushing a single element
+        * and I guess this can't be done in a different way, easily.*/
+        for(let i = 1; i < sheetsToCombine.length; i++){
+            Array.prototype.push.apply(concatenatedSheets, sheetsToCombine[i]);
+        }
+
+        return concatenatedSheets;
     }
 
     /*Each class has a period at is front ex. 1 - Int Math II.
@@ -405,37 +425,84 @@ $( document ).ready(function() {
 
     /*creates the Submit button*/
     function TheButGenerator(text){
-        return $('<button type="button" id="submitButton">' + text +'</button>').click(function (){
-            $('*').css('cursor', 'wait');
-            /*Causes a small delay
-            this delay is important because with out it
-            the 'wait' mouse never appears
-            DetermineRequest is the callback function
-            for when the user clicks the submit button*/
-            setTimeout(DetermineRequest, 25);
-    });
+        if(text === "Submit"){
+            return $('<button type="button" id="submitButton">' + text +'</button>').click(function (){
+                $('*').css('cursor', 'wait');
+                /*Causes a small delay
+                this delay is important because with out it
+                the 'wait' mouse never appears
+                DetermineRequest is the callback function
+                for when the user clicks the submit button*/
+                setTimeout(DetermineRequest, 25);
+            });
+        } else if(text === "Next"){
+            return $('<button type="button" id="submitButton">' + text +'</button>').click(function (){
+                $('*').css('cursor', 'wait');
+                /*Causes a small delay
+                this delay is important because with out it
+                the 'wait' mouse never appears
+                DetermineRequest is the callback function
+                for when the user clicks the submit button*/
+                setTimeout(NextRequest, 25);
+            });
+
+        }
+
+    }
+
+    /*Run after the user hits next*/
+    function NextRequest() {
+        let text0 = $('#text0');
+        /*After entering how many tutor logs to enter and maybe what month you want go here*/
+        if(text0.text() === 'Number Of UCD Tutor Logs To Be Used In Report'){
+            userEnteredData.numberOfUCDTutorFiles = Number($('#fileCount').val());
+            userEnteredData.month= $('#monthSelector-button').text().trim();
+            let textNode = 'Select UCD Tutor Monthly Logs';
+            //let textNodeArray = new Array(userEnteredData.numberOfUCDTutorFiles);
+            clearHTMLAfterSelector();
+            AttachInputTextInital(textNode);
+            if(userEnteredData.numberOfUCDTutorFiles === 1){
+                $('#innerInputDiv0').after(TheButGenerator("Next"));
+            }else{
+                AttachInputTextMultiple(false, 1, userEnteredData.numberOfUCDTutorFiles);
+            }
+
+            /*After getting all the tutor logs uploaded, now time to know how many
+            * peer tutor logs wanted and maybe what month go here*/
+        } else if (text0.text() === 'Select UCD Tutor Monthly Logs') {
+            GetManyOfTheSameFile("tutorMonthlyLog");
+            clearHTMLAfterSelector();
+            NumOfFilesDesired("Number Of Peer Tutor Logs To Be Used In Report");
+            $('#innerInputDiv0').after(TheButGenerator("Next"));
+
+            /*After knowing how many peer tutor logs to be uploaded go here*/
+        } else if (text0.text() === 'Number Of Peer Tutor Logs To Be Used In Report'){
+            userEnteredData.numberOfPeerTutorFiles = Number($('#fileCount').val());
+            let textNode = 'Select Peer Tutor Monthly Logs';
+            //let textNodeArray = new Array(userEnteredData.numberOfPeerTutorFiles);
+            clearHTMLAfterSelector();
+            AttachInputTextInital(textNode);
+            if(userEnteredData.numberOfPeerTutorFiles === 1){
+                $('#innerInputDiv0').after(TheButGenerator("Next"));
+            }else{
+                AttachInputTextMultiple(false, 1, userEnteredData.numberOfPeerTutorFiles);
+            }
+
+            /*After getting all the peer tutor logs go here*/
+        } else if(text0.text() === 'Select Peer Tutor Monthly Logs'){
+            GetManyOfTheSameFile("tutorMonthlyLog");
+            clearHTMLAfterSelector();
+            let textNodeAttendance = document.createTextNode("Please Select Attendance File");
+            AttachInputTextInital(textNodeAttendance);
+            $('#innerInputDiv0').after(TheButGenerator("Submit"));
+        }
+
     }
 
     /*Run after the user hits submit*/
     function DetermineRequest() {
-        /*When giving information before selecting files.
-        * i.e. how many files need to be parsed or the month
-        * that needs to be parsed.*/
-        if($('#submitButton').text() === 'Next'){
-            userEnteredData.numberOfFiles = Number($('#fileCount').val());
-            userEnteredData.month= $('#monthSelector-button').text().trim();
-            let textNode = 'Select Tutor Monthly Attendance';
-            let textNodeArray = new Array(userEnteredData.numberOfFiles);
-            clearHTMLAfterSelector();
-            AttachInputTextInital(textNode);
-            if(userEnteredData.numberOfFiles === 1){
-                $('#innerInputDiv0').after(TheButGenerator("Submit"));
-            }else{
-                AttachInputTextMultiple(textNodeArray, 1, userEnteredData.numberOfFiles);
-            }
-
         /*Total Count*/
-        } else if(theSelector.value === arrayOfPossibleChoices[0]){
+        if(theSelector.value === arrayOfPossibleChoices[0]){
             GetSingleFile("periodAttendance");
 
         /*Convert Aries Query Fall*/
@@ -455,8 +522,10 @@ $( document ).ready(function() {
             GetSingleFile("periodAttendance");
 
         /*Monthly Migrant Ed Report*/
+        /*This is really the final step after we have gotten all the UCD tutor logs
+        * and after we have gotten all the peer tutor logs*/
         }else if(theSelector.value === arrayOfPossibleChoices[5]){
-            GetManyOfTheSameFile("tutorMonthlyLog")
+            GetSingleFile("periodAttendance");
         }
     }
 
@@ -468,14 +537,22 @@ $( document ).ready(function() {
         var arOfInputs = alignerDiv.children;
         /*Must be handled this way so each different file is handled
         * not just the same one repeated several times*/
-        for(var i = 0; i < numOfFiles; i++){(function (file, i){
+        for(var i = 0; i < numOfFiles; i++){
+            let file;
+            if(i === 0){
+                file = arOfInputs[i].children[1].files[0];
+            }else{
+                file = arOfInputs[i].children[0].files[0];
+            }
+            (function (file){
             var reader = new FileReader();
             reader.onload = function (e) {
                     ConvertSheetToJSON(e, 3, fileType);
             };
             reader.readAsArrayBuffer(file);
 
-        })(arOfInputs[i].children[1].files[0], i)}
+            })(file)
+        }
     }
 
 
@@ -637,10 +714,13 @@ $( document ).ready(function() {
 
     /*Attaches all upload buttons and names after the initial*/
     function AttachInputTextMultiple(textNodeArray, i, totalNumFiles) {
+        /*textNodeArray is either an array of text nodes or in the case below
+        * it will simply be a bool that is false*/
+
         /*this is for attaching one title and multiple upload buttons.
         * This is used when uploading multiple files of the same type,
         * i.e. 15 tutor logs*/
-        if(textNodeArray.length === undefined){
+        if(textNodeArray === false){
             for(i; i < totalNumFiles; i++){
                 let newInnerInput = '#innerInputDiv' + i;
                 /*Div containing an upload button and its title*/
@@ -664,7 +744,7 @@ $( document ).ready(function() {
                 * ***This might need to be changed later, when we need to***
                 * ***upload many of 2 types of files*** */
                 if(i === totalNumFiles - 1){
-                    $(newInnerInput).after(TheButGenerator("Submit"));
+                    $(newInnerInput).after(TheButGenerator("Next"));
                 }
             }
             /*when attaching many upload buttons
@@ -736,7 +816,7 @@ $( document ).ready(function() {
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
             /*Monthly Migrant Ed Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[5]){
-            NumOfFilesDesired("Number Of Tutor Logs To Be Used In Report");
+            NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
             MonthWanted();
             $('#innerInputDiv1').after(TheButGenerator("Next"));
         }
