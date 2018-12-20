@@ -8,6 +8,8 @@ $( document ).ready(function() {
     /*Enables parsing of excel files*/
     var XLSX = require('xlsx');
 
+
+
     /*Names of possible reports the user can select*/
     const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
         "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report", "Monthly Migrant Ed Report"];
@@ -38,6 +40,8 @@ $( document ).ready(function() {
     * and a json as been generated*/
     var objSheetAr = {
         periodAttendance: new Array(),
+        tutorMonthlyLog: new Array(),
+        peerTutorMonthlyLog: new Array(),
         ariesQuery: "",
         etsRoster: "",
         ptsRoster: "",
@@ -79,8 +83,8 @@ $( document ).ready(function() {
                 let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
                 sheetAr = AddPrograms(sheetAr);
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
-
-            }else if(prop === "periodAttendance" && objSheetAr.periodAttendance.length === userEnteredData.numberOfFiles){
+                /*Monthly Mig Report*/
+            }else if(prop === "tutorMonthlyLog" && objSheetAr.tutorMonthlyLog.length === userEnteredData.numberOfFiles){
                 //now figure out how to handle each of the files, they are the same file I need to search for the correct month
                 console.log();
             }
@@ -231,7 +235,7 @@ $( document ).ready(function() {
         let alreadyBeenCounted = false;
         let studentOb = new Student();
         /*checks to to see if student has been counted already*/
-        for(let i = 0; i < ASSETsAr.length; i++){
+        for(var i = 0; i < ASSETsAr.length; i++){
             if(ASSETsAr[i].StudentID === periodAttendanceRow["Student ID"]){
                 alreadyBeenCounted = true;
                 break;
@@ -419,30 +423,40 @@ $( document ).ready(function() {
         * that needs to be parsed.*/
         if($('#submitButton').text() === 'Next'){
             userEnteredData.numberOfFiles = Number($('#fileCount').val());
-            userEnteredData.month= $('#monthSelector-button').text();
+            userEnteredData.month= $('#monthSelector-button').text().trim();
             let textNode = 'Select Tutor Monthly Attendance';
             let textNodeArray = new Array(userEnteredData.numberOfFiles);
             clearHTMLAfterSelector();
             AttachInputTextInital(textNode);
-            AttachInputTextMultiple(textNodeArray, 1, userEnteredData.numberOfFiles);
+            if(userEnteredData.numberOfFiles === 1){
+                $('#innerInputDiv0').after(TheButGenerator("Submit"));
+            }else{
+                AttachInputTextMultiple(textNodeArray, 1, userEnteredData.numberOfFiles);
+            }
+
         /*Total Count*/
         } else if(theSelector.value === arrayOfPossibleChoices[0]){
             GetSingleFile("periodAttendance");
+
         /*Convert Aries Query Fall*/
         }else if(theSelector.value === arrayOfPossibleChoices[1]){
             GetSingleFile("ariesQuery");
+
         /*Convert Aries Query Fall With ALL Programs*/
         }else if(theSelector.value === arrayOfPossibleChoices[2]){
             GetEachProgramRoster();
+
         /*Monthly Lunch ASSETs Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
             GetSingleFile("periodAttendance");
+
         /*Monthly After School ASSETs Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[4]){
             GetSingleFile("periodAttendance");
+
         /*Monthly Migrant Ed Report*/
         }else if(theSelector.value === arrayOfPossibleChoices[5]){
-            GetManyOfTheSameFile("periodAttendance")
+            GetManyOfTheSameFile("tutorMonthlyLog")
         }
     }
 
@@ -457,12 +471,14 @@ $( document ).ready(function() {
         for(var i = 0; i < numOfFiles; i++){(function (file, i){
             var reader = new FileReader();
             reader.onload = function (e) {
-                    ConvertSheetToJSON(e, 0, fileType);
+                    ConvertSheetToJSON(e, 3, fileType);
             };
             reader.readAsArrayBuffer(file);
 
         })(arOfInputs[i].children[1].files[0], i)}
     }
+
+
 
 
 
@@ -490,28 +506,49 @@ $( document ).ready(function() {
     }
 
     /*Finds where the students start in excel sheet
-    * that postion is noted so that the worksheet can be
+    * that position is noted so that the worksheet can be
     * parsed from that point on, disregarding
     * rows above that*/
-    function CorrectHeaders(workSheet) {
+    function CorrectPositionInSheet(workSheet, startingPointIdentifier, endPointIdentifier ,fileType) {
         let initalJSON = XLSX.utils.sheet_to_json(workSheet);
+        let startingRow = 0;
+        let endingRow = 0;
         for(var i = 0; i < initalJSON.length; i++) {
-            let getOut = false;
-            for (cell in initalJSON[i]) {
+            let startingFound = false;
+            let endFound =  false;
+            for (let cell in initalJSON[i]) {
                 /*if cell containing "Student ID" is found, break
-                * out of this loop and the out, we have found
+                * out of this loop and the outer loop, we have found
                 * what we are looking for*/
-                if (initalJSON[i][cell] === "Student ID") {
-                    getOut = !getOut;
+                if (initalJSON[i][cell] === startingPointIdentifier) {
+                    startingFound = true;
+                    startingRow =  initalJSON[i]["__rowNum__"];
+                    if(endPointIdentifier === undefined){
+                        endFound = true;
+                        break;
+                    }
+                }else if (initalJSON[i][cell] === endPointIdentifier){
+                    endFound = true;
+                    endingRow = initalJSON[i]["__rowNum__"];
                     break;
                 }
             }
-            if (getOut) {
+            if (startingFound && endFound) {
                 break;
             }
         }
+        let correctJSON;
         /* This produces a json starting at the point we know is the beginning of the students*/
-        let correctJSON = XLSX.utils.sheet_to_json(workSheet, {range: i + 1});
+        if(fileType === "tutorMonthlyLog"){
+            if(endPointIdentifier === undefined){
+                endingRow = initalJSON.length;
+            }
+            //let range = { s: { c: 0, r: (startingRow + 4) }, e: { c: 16, r: (endingRow + 4) } };
+            correctJSON = XLSX.utils.sheet_to_json(workSheet,
+                {range: { s: { c: 0, r: (startingRow + 1)}, e: { c: 16, r: (endingRow - 4) } }});
+        } else if( fileType === "roster"){
+            correctJSON = XLSX.utils.sheet_to_json(workSheet, {range: startingRow + 1});
+        }
         return correctJSON;
     }
 
@@ -538,22 +575,22 @@ $( document ).ready(function() {
         for(sheet in arSheets){
             if(arSheets[sheet].includes("ELD")){
                 workSheet = workBook.Sheets[arSheets[sheet]];
-                json = CorrectHeaders(workSheet);
+                json = CorrectPositionInSheet(workSheet, "Student ID", undefined,"roster");
                 objSheetAr["eldRoster"] = json;
                 theProxy["eldRoster"] = json;
             }else if(arSheets[sheet].includes("ME")){
                 workSheet = workBook.Sheets[arSheets[sheet]];
-                json = CorrectHeaders(workSheet);
+                json = CorrectPositionInSheet(workSheet, "Student ID", undefined,"roster");
                 objSheetAr["migRoster"] = json;
                 theProxy["migRoster"] = json;
             }else if(arSheets[sheet].includes("ETS")){
                 workSheet = workBook.Sheets[arSheets[sheet]];
-                json = CorrectHeaders(workSheet);
+                json = CorrectPositionInSheet(workSheet, "Student ID", undefined,"roster");
                 objSheetAr["etsRoster"] = json;
                 theProxy["etsRoster"] = json;
             }else if(arSheets[sheet].includes("PTS")){
                 workSheet = workBook.Sheets[arSheets[sheet]];
-                json = CorrectHeaders(workSheet);
+                json = CorrectPositionInSheet(workSheet, "Student ID", undefined,"roster");
                 objSheetAr["ptsRoster"] = json;
                 theProxy["ptsRoster"] = json;
             }
@@ -913,24 +950,50 @@ $( document ).ready(function() {
     }
 
     /*Converts excel file to JSON and updates global array with converted sheets and the global proxy*/
-    function ConvertSheetToJSON(e, correctSheet, sheetname) {
+    function ConvertSheetToJSON(e, correctSheet, sheetName) {
         let data = e.target.result;
         data = new Uint8Array(data);
         let workBook = XLSX.read(data, {type: 'array'});
         let arSheets = workBook.SheetNames;
         let workSheet = workBook.Sheets[arSheets[correctSheet]];
-        let json = XLSX.utils.sheet_to_json(workSheet);
-        if(sheetname === "periodAttendance") {
+        if(sheetName === "periodAttendance") {
             /*The global object needs to be changed to store
             * the sheet array but the proxy just needs to have its value updated
             * so that it will trigger the handler*/
-            objSheetAr[sheetname].push(json);
-            theProxy[sheetname] = 5; // This need to be literally anything it does.
-        }else {
-            objSheetAr[sheetname] = json;
-            theProxy[sheetname] = json;
+            let json = XLSX.utils.sheet_to_json(workSheet);
+            objSheetAr[sheetName].push(json);
+            theProxy[sheetName] = 5; // This can be literally anything
+        } else if (sheetName === "tutorMonthlyLog"){
+            var followingMonth;
+            /*Names of Months, needed to find next month so the correct part of the log will be taken in*/
+            const arrayOfMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                "October", "November", "December"];
+            if((userEnteredData.month === "December") || (userEnteredData.month === "June")){
+                followingMonth = undefined;
+            }else{
+                for(let j = 0; j < arrayOfMonths.length; j++){
+                    if(arrayOfMonths[j] === userEnteredData.month){
+                        followingMonth = arrayOfMonths[j + 1];
+                    }
+                }
+
+            }
+
+
+            /*The global object needs to be changed to store
+            * the sheet array but the proxy just needs to have its value updated
+            * so that it will trigger the handler*/
+            let json = CorrectPositionInSheet(workSheet, userEnteredData.month, followingMonth, sheetName);
+            objSheetAr[sheetName].push(json);
+            theProxy[sheetName] = 5; // This can be literally anything
+        } else {
+            let json = XLSX.utils.sheet_to_json(workSheet);
+            objSheetAr[sheetName] = json;
+            theProxy[sheetName] = json;
         }
     }
+
+
 
     /*After the given sheets have been parsed, here the result is
     * turned in a new excel sheet and then workbook.*/

@@ -19,10 +19,10 @@ For Each objFile in colFiles
         theArray = Split(objFile.Name,")")
   	shortFileName = theArray(0) & ")" & "(" & convertedDate & ")" & "(After Lunch)" & ".xlsx"
         if (numberTime < 14) Then
-	   newFileName =  "Y:\2018-2019\Attendance\Computer Attendance\Old Attendance\Auto Backups\" & theArray(0) & ")" & "(" & convertedDate & ")" & "(After Lunch)" & ".xlsx"
+	   newFileName =  "Y:\2018-2019\Attendance\Computer Attendance\Old Attendance\Auto Back ups\" & theArray(0) & ")" & "(" & convertedDate & ")" & "(After Lunch)" & ".xlsx"
            filesys.CopyFile "Y:\2018-2019\Attendance\Computer Attendance\Current Attendance\" & objFile.Name,newFileName  
         Else
-	   newFileName =  "Y:\2018-2019\Attendance\Computer Attendance\Old Attendance\Auto Backups\" & theArray(0) & ")" & "(" & convertedDate & ")" & "(After 4pm)" & ".xlsx" 	
+	   newFileName =  "Y:\2018-2019\Attendance\Computer Attendance\Old Attendance\Auto Back ups\" & theArray(0) & ")" & "(" & convertedDate & ")" & "(After 4pm)" & ".xlsx" 	
            filesys.CopyFile "Y:\2018-2019\Attendance\Computer Attendance\Current Attendance\" & objFile.Name, newFileName
         End If
         fileFound = true
@@ -36,5 +36,4 @@ if fileFound Then
 Else
     Wscript.Echo "Period Attendance File could not be saved. Please refer to documentation, if you still can't resolve the issue please email Spencer at svgrossarth@gmail.com"
 end if
-
 
