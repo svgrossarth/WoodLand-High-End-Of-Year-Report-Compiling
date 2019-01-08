@@ -12,6 +12,7 @@ $( document ).ready(function() {
 
     /*Names of possible reports the user can select*/
     const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
+        "Convert Aries Query Spring", "Convert Aries Query Spring With ALL Programs",
         "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report", "Monthly Migrant Ed Report"];
 
     /*Saves user data entered after selecting report*/
@@ -63,29 +64,53 @@ $( document ).ready(function() {
                 CreateNewExcel(sheetAr, "TotalCountReport.xlsx");
 
                 /*ASSETs Lunch Report*/
-            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[3]){
+            }else if (prop === "periodAttendance" && theSelector.value === arrayofpossiblechoices[5]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
 
                 /*ASSETs After School Report*/
-            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[4]){
+            }else if (prop === "periodAttendance" && theSelector.value === arrayofpossiblechoices[6]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
 
-                /*Student Roster with out programs*/
-            } else if(prop === "ariesQuery" && value !=="" && obj["etsRoster"] === "" &&
-                obj["ptsRoster"] === "" && obj["migRoster"] === "" && obj["eldRoster"] === ""){
-                let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
+                /*Student Roster with out programs, fall*/
+            } else if(theSelector.value === arrayOfPossibleChoices[1]){
+                let sheetAr = AriesQuery(objSheetAr["ariesQuery"], true);
                 CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
 
-                /*Student Roster WITH programs*/
-            }else if(obj["ariesQuery"] !== "" && obj["etsRoster"] !== "" &&
-                     obj["ptsRoster"] !== "" && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
-                let sheetAr = AriesQuery(objSheetAr["ariesQuery"]);
+                /*Student Roster WITH programs, fall.
+                * The if check needs to include all of those things to ensure that
+                * all of the components needed to assemble the parsed aries query are
+                * there. This is because the process of them becoming a json is asynchronous
+                * so the ordering for when they finish is unknown.*/
+            }else if(theSelector.value === arrayOfPossibleChoices[2] && obj["ariesQuery"] !== ""
+                && obj["etsRoster"] !== "" && obj["ptsRoster"] !== ""
+                && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
+
+                let sheetAr = AriesQuery(objSheetAr["ariesQuery"], true);
                 sheetAr = AddPrograms(sheetAr);
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
+
+                /*Student Roster with out programs, Spring*/
+            } else if(theSelector.value === arrayOfPossibleChoices[3]){
+                let sheetAr = AriesQuery(objSheetAr["ariesQuery"], false);
+                CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
+
+                /*Student Roster WITH programs, Spring.
+                * The if check needs to include all of those things to ensure that
+                * all of the components needed to assemble the parsed aries query are
+                * there. This is because the process of them becoming a json is asynchronous
+                * so the ordering for when they finish is unknown.*/
+            }else if(theSelector.value === arrayOfPossibleChoices[4] && obj["ariesQuery"] !== ""
+                && obj["etsRoster"] !== "" && obj["ptsRoster"] !== ""
+                && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
+
+                let sheetAr = AriesQuery(objSheetAr["ariesQuery"], false);
+                sheetAr = AddPrograms(sheetAr);
+                CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
+
                 /*Monthly Mig Report*/
-            }else if(prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[5]){
+            }else if(prop === "periodAttendance" && theSelector.value === arrayofpossiblechoices[7]){
                 if(objSheetAr.tutorMonthlyLog.length > 1){
                     var conatenatedSheet = ConcatenateSheets(objSheetAr.tutorMonthlyLog);
                 }
@@ -344,14 +369,14 @@ $( document ).ready(function() {
             if(periodAttendance[i]["Student ID"] !== undefined) {
                 let theStudent;
                 /*Lunch*/
-                if (theSelector.value === arrayOfPossibleChoices[3]) {
+                if (theSelector.value === arrayofpossiblechoices[5]) {
                     theStudent = InitializeStudentBuilder(periodAttendance[i], "Lunch", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
                         ASSETsAr.push(theStudent);
                     }
                     /*After School*/
-                } else if (theSelector.value === arrayOfPossibleChoices[4]) {
+                } else if (theSelector.value === arrayofpossiblechoices[6]) {
                     theStudent = InitializeStudentBuilder(periodAttendance[i], "After School", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
@@ -513,18 +538,26 @@ $( document ).ready(function() {
         }else if(theSelector.value === arrayOfPossibleChoices[2]){
             GetEachProgramRoster();
 
-        /*Monthly Lunch ASSETs Report*/
+            /*Convert Aries Query Spring*/
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
+            GetSingleFile("ariesQuery");
+
+            /*Convert Aries Query Spring With ALL Programs*/
+        }else if(theSelector.value === arrayOfPossibleChoices[4]){
+            GetEachProgramRoster();
+
+        /*Monthly Lunch ASSETs Report*/
+        }else if(theSelector.value === arrayofpossiblechoices[5]){
             GetSingleFile("periodAttendance");
 
         /*Monthly After School ASSETs Report*/
-        }else if(theSelector.value === arrayOfPossibleChoices[4]){
+        }else if(theSelector.value === arrayofpossiblechoices[6]){
             GetSingleFile("periodAttendance");
 
         /*Monthly Migrant Ed Report*/
         /*This is really the final step after we have gotten all the UCD tutor logs
         * and after we have gotten all the peer tutor logs*/
-        }else if(theSelector.value === arrayOfPossibleChoices[5]){
+        }else if(theSelector.value === arrayofpossiblechoices[7]){
             GetSingleFile("periodAttendance");
         }
     }
@@ -624,7 +657,7 @@ $( document ).ready(function() {
             correctJSON = XLSX.utils.sheet_to_json(workSheet,
                 {range: { s: { c: 0, r: (startingRow + 1)}, e: { c: 16, r: (endingRow - 4) } }});
         } else if( fileType === "roster"){
-            correctJSON = XLSX.utils.sheet_to_json(workSheet, {range: startingRow + 1});
+            correctJSON = XLSX.utils.sheet_to_json(workSheet, {range: startingRow});
         }
         return correctJSON;
     }
@@ -787,35 +820,53 @@ $( document ).ready(function() {
         var textNodeArray = [];
         var textNode = document.createTextNode("Please Select Aries Query");
         textNodeArray.push(textNode);
+
         /*Total Count*/
         if(theSelector.value === arrayOfPossibleChoices[0]){
             let textNodeAttendance = document.createTextNode("Please Select Attendance File");
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+
             /*Convert Aries Query Fall*/
         }else if(theSelector.value === arrayOfPossibleChoices[1]){
             AttachInputTextInital(textNode);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+
             /*Convert Aries Query Fall With ALL Programs*/
         } else if(theSelector.value === arrayOfPossibleChoices[2]){
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(textNodeArray, 1, 2);
-            /*Monthly Lunch ASSETs Report*/
+
+            /*Convert Aries Query Spring*/
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
+            AttachInputTextInital(textNode);
+            $('#innerInputDiv0').after(TheButGenerator("Submit"));
+
+            /*Convert Aries Query Spring With ALL Programs*/
+        } else if(theSelector.value === arrayOfPossibleChoices[4]){
+            var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
+            textNodeArray.push(textNode1);
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(textNodeArray, 1, 2);
+
+            /*Monthly Lunch ASSETs Report*/
+        }else if(theSelector.value === arrayofpossiblechoices[5]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+
             /*Monthly After School ASSETs Report*/
-        }else if(theSelector.value === arrayOfPossibleChoices[4]){
+        }else if(theSelector.value === arrayofpossiblechoices[6]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+
             /*Monthly Migrant Ed Report*/
-        }else if(theSelector.value === arrayOfPossibleChoices[5]){
+        }else if(theSelector.value === arrayofpossiblechoices[7]){
             NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
             MonthWanted();
             $('#innerInputDiv1').after(TheButGenerator("Next"));
@@ -970,15 +1021,18 @@ $( document ).ready(function() {
     }
 
     /*Builds up the sheet so that it includes all the students
-    * classes (in the same row), and removes the duplicate rows*/
-    function AriesQuery (sheetAr){
+    * classes (in the same row), and removes the duplicate rows
+    * semester is true if it is fall semester and it is false if it is
+    * spring semester*/
+    function AriesQuery (sheetAr, semester){
         let keyword = "Class";
         for(let i = 0; i < sheetAr.length; i++){
             AddClassSlots(sheetAr[i], keyword);
             for(let j = 0; j < sheetAr.length; j++){
                 if(sheetAr[i]["Student ID"] === sheetAr[j]["Student ID"]){
                     if(i !== j){
-                        if(sheetAr[j]["Semester"] !== "S"){
+                        /*this is for a fall aries query*/
+                        if((sheetAr[j]["Semester"] !== "S") && (semester === true)){
                             let period = sheetAr[j]["Period"];
                             keyword = keyword + period;
                             /*adds the class, with the period, to the appropriate class entry in the object*/
@@ -987,7 +1041,18 @@ $( document ).ready(function() {
                             sheetAr.splice(j, 1); //removes row
                             j--; // change index since a row was removed
                             keyword = "Class";
-                        }else {
+
+                            /*this is for the spring aries query*/
+                        } else if ((sheetAr[j]["Semester"] !== "F") && (semester === false)){
+                            let period = sheetAr[j]["Period"];
+                            keyword = keyword + period;
+                            /*adds the class, with the period, to the appropriate class entry in the object*/
+                            sheetAr[i][keyword] = period + " - " + sheetAr[j]["Course title"];
+                            AVIDChecker(sheetAr[i], sheetAr[j]["Course title"]);
+                            sheetAr.splice(j, 1); //removes row
+                            j--; // change index since a row was removed
+                            keyword = "Class";
+                        } else {
                             sheetAr.splice(j, 1); //removes row
                             j--; // change index since a row was removed
                         }

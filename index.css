@@ -168,7 +168,9 @@ body{
 #theSelector-menu{
     background: white;
     font-family: 'Open Sans', sans-serif !important;
-
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     box-shadow: 3px 3px 10px grey;
 }
 
@@ -176,6 +178,7 @@ body{
     border: none;
     outline: none;
     border-radius: 20px;
+    width: 350px !important;
 }
 
 
