@@ -13,13 +13,14 @@ $( document ).ready(function() {
     /*Names of possible reports the user can select*/
     const arrayOfPossibleChoices = ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
         "Convert Aries Query Spring", "Convert Aries Query Spring With ALL Programs",
-        "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report", "Monthly Migrant Ed Report"];
+        "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report", "Monthly Migrant Ed Report",
+        "End Of Fall Semester Totals"];
 
     /*Saves user data entered after selecting report*/
     var userEnteredData ={
         month:"",
         numberOfUCDTutorFiles:"",
-        numberOfPeerTutorFiles:""
+        numberOfPeerTutorFiles:"",
     };
 
     /*Initialized the JQuery select
@@ -64,12 +65,12 @@ $( document ).ready(function() {
                 CreateNewExcel(sheetAr, "TotalCountReport.xlsx");
 
                 /*ASSETs Lunch Report*/
-            }else if (prop === "periodAttendance" && theSelector.value === arrayofpossiblechoices[5]){
+            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[5]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
 
                 /*ASSETs After School Report*/
-            }else if (prop === "periodAttendance" && theSelector.value === arrayofpossiblechoices[6]){
+            }else if (prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[6]){
                 let sheetAr = ASSETsReport(objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
 
@@ -110,10 +111,20 @@ $( document ).ready(function() {
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
 
                 /*Monthly Mig Report*/
-            }else if(prop === "periodAttendance" && theSelector.value === arrayofpossiblechoices[7]){
+            }else if(prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[7]){
                 if(objSheetAr.tutorMonthlyLog.length > 1){
                     var conatenatedSheet = ConcatenateSheets(objSheetAr.tutorMonthlyLog);
                 }
+
+                /*End Of Fall Semester Totals*/
+            }else if(prop === "periodAttendance" && theSelector.value === arrayOfPossibleChoices[8]
+                && objSheetAr.periodAttendance.length === 5){
+                var combinedSuperSheet = [objSheetAr.tutorMonthlyLog, objSheetAr.periodAttendance];
+                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
+                RemoveEmptyRows(concatendatedSuperSheet);
+
+
+
             }
         }
     };
@@ -145,6 +156,7 @@ $( document ).ready(function() {
         $('#theSelector-button').css('border-radius', '20px');
         $('#theSelector-button').click(clickOnSelector);
     }
+
 
 
     /*this is the Student object that is used when making
@@ -233,10 +245,13 @@ $( document ).ready(function() {
         * and applies it to something else. Here I am applying it to arrays but in the normal way.
         * I am pushing and entire array on to an existing array, I am not just pushing a single element
         * and I guess this can't be done in a different way, easily.*/
+
         for(let i = 1; i < sheetsToCombine.length; i++){
             Array.prototype.push.apply(concatenatedSheets, sheetsToCombine[i]);
         }
-
+        if($.isArray(concatenatedSheets[0])){
+           concatenatedSheets = ConcatenateSheets(concatenatedSheets);
+        }
         return concatenatedSheets;
     }
 
@@ -327,9 +342,14 @@ $( document ).ready(function() {
             studentOb.StudentID = periodAttendanceRow["Student ID"];
             studentOb.StudentName = periodAttendanceRow["First Name"] + " " + periodAttendanceRow["Last Name"];
             removePeriodFromClass(periodAttendanceRow);
-            studentOb.Subject = periodAttendanceRow["Subject"];
-            if(periodAttendanceRow["Other Subject"]){
+            /*Checks to see if there is anything in subject*/
+            if(periodAttendanceRow["Subject"]){
+                studentOb.Subject = periodAttendanceRow["Subject"];
+            }
+            if(periodAttendanceRow["Other Subject"] && studentOb.Subject !== ""){
                 studentOb.Subject += ", " + periodAttendanceRow["Other Subject"];
+            }else if(periodAttendanceRow["Other Subject"]){
+                studentOb.Subject += periodAttendanceRow["Other Subject"];
             }
             if(period === "Lunch"){
                 studentOb[dayOfTheMonth] = "1";
@@ -344,7 +364,7 @@ $( document ).ready(function() {
     }
 
     /*Calls function to build a student.
-    * This determins if the student is is being built for
+    * This determines if the student is being built for
     * the lunch or after school report.*/
     function InitializeStudentBuilder(periodAttendanceRow, period, counter, ASSETsAr) {
         let studentOb = new Student();
@@ -366,17 +386,17 @@ $( document ).ready(function() {
         let ASSETsAr = [];
         let count = 1;
         for(let i = 0; i < periodAttendance.length; i++){
-            if(periodAttendance[i]["Student ID"] !== undefined) {
+            if(periodAttendance[i]["Student ID"] !== undefined && periodAttendance[i]["First Name"] !== undefined) {
                 let theStudent;
                 /*Lunch*/
-                if (theSelector.value === arrayofpossiblechoices[5]) {
+                if (theSelector.value === arrayOfPossibleChoices[5]) {
                     theStudent = InitializeStudentBuilder(periodAttendance[i], "Lunch", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
                         ASSETsAr.push(theStudent);
                     }
                     /*After School*/
-                } else if (theSelector.value === arrayofpossiblechoices[6]) {
+                } else if (theSelector.value === arrayOfPossibleChoices[6]) {
                     theStudent = InitializeStudentBuilder(periodAttendance[i], "After School", count, ASSETsAr);
                     if (theStudent.Count !== "") {
                         count++;
@@ -481,7 +501,12 @@ $( document ).ready(function() {
         /*After entering how many tutor logs to enter and maybe what month you want go here*/
         if(text0.text() === 'Number Of UCD Tutor Logs To Be Used In Report'){
             userEnteredData.numberOfUCDTutorFiles = Number($('#fileCount').val());
-            userEnteredData.month= $('#monthSelector-button').text().trim();
+            if(theSelector.value === arrayOfPossibleChoices[8]){
+                userEnteredData.month = "August";
+            } else {
+                userEnteredData.month = $('#monthSelector-button').text().trim();
+            }
+
             let textNode = 'Select UCD Tutor Monthly Logs';
             //let textNodeArray = new Array(userEnteredData.numberOfUCDTutorFiles);
             clearHTMLAfterSelector();
@@ -489,7 +514,7 @@ $( document ).ready(function() {
             if(userEnteredData.numberOfUCDTutorFiles === 1){
                 $('#innerInputDiv0').after(TheButGenerator("Next"));
             }else{
-                AttachInputTextMultiple(false, 1, userEnteredData.numberOfUCDTutorFiles);
+                AttachInputTextMultiple(false, 1, userEnteredData.numberOfUCDTutorFiles, false);
             }
 
             /*After getting all the tutor logs uploaded, now time to know how many
@@ -504,22 +529,29 @@ $( document ).ready(function() {
         } else if (text0.text() === 'Number Of Peer Tutor Logs To Be Used In Report'){
             userEnteredData.numberOfPeerTutorFiles = Number($('#fileCount').val());
             let textNode = 'Select Peer Tutor Monthly Logs';
-            //let textNodeArray = new Array(userEnteredData.numberOfPeerTutorFiles);
             clearHTMLAfterSelector();
             AttachInputTextInital(textNode);
             if(userEnteredData.numberOfPeerTutorFiles === 1){
                 $('#innerInputDiv0').after(TheButGenerator("Next"));
             }else{
-                AttachInputTextMultiple(false, 1, userEnteredData.numberOfPeerTutorFiles);
+                AttachInputTextMultiple(false, 1, userEnteredData.numberOfPeerTutorFiles, false);
             }
 
-            /*After getting all the peer tutor logs go here*/
-        } else if(text0.text() === 'Select Peer Tutor Monthly Logs'){
+            /*After getting all the peer tutor logs go here to get the period attendance file*/
+        } else if(text0.text() === 'Select Peer Tutor Monthly Logs' && theSelector.value === arrayOfPossibleChoices[7]){
             GetManyOfTheSameFile("tutorMonthlyLog");
             clearHTMLAfterSelector();
-            let textNodeAttendance = document.createTextNode("Please Select Attendance File");
+            let textNodeAttendance = document.createTextNode("Please Select Period Attendance File");
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
+
+            /*After selecting the peer tutor logs to be used go here to get all the period attendance files needed*/
+        } else if(text0.text() === 'Select Peer Tutor Monthly Logs' && theSelector.value === arrayOfPossibleChoices[8]){
+            GetManyOfTheSameFile("tutorMonthlyLog");
+            clearHTMLAfterSelector();
+            let textNode = 'Select Period Attendance Files From August to December';
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(false, 1, 5, true);
         }
 
     }
@@ -547,18 +579,25 @@ $( document ).ready(function() {
             GetEachProgramRoster();
 
         /*Monthly Lunch ASSETs Report*/
-        }else if(theSelector.value === arrayofpossiblechoices[5]){
+        }else if(theSelector.value === arrayOfPossibleChoices[5]){
             GetSingleFile("periodAttendance");
 
         /*Monthly After School ASSETs Report*/
-        }else if(theSelector.value === arrayofpossiblechoices[6]){
+        }else if(theSelector.value === arrayOfPossibleChoices[6]){
             GetSingleFile("periodAttendance");
 
         /*Monthly Migrant Ed Report*/
         /*This is really the final step after we have gotten all the UCD tutor logs
         * and after we have gotten all the peer tutor logs*/
-        }else if(theSelector.value === arrayofpossiblechoices[7]){
+        }else if(theSelector.value === arrayOfPossibleChoices[7]) {
             GetSingleFile("periodAttendance");
+
+
+            /*End Of Fall Semester Totals
+            * This is really the final step after we have gotten all the UCD tutor logs
+            * and after we have gotten all the peer tutor logs*/
+        }else if(theSelector.value === arrayOfPossibleChoices[8]){
+            GetManyOfTheSameFile("periodAttendance");
         }
     }
 
@@ -578,11 +617,15 @@ $( document ).ready(function() {
                 file = arOfInputs[i].children[0].files[0];
             }
             (function (file){
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                    ConvertSheetToJSON(e, 3, fileType);
-            };
-            reader.readAsArrayBuffer(file);
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    if(fileType === "tutorMonthlyLog"){
+                        ConvertSheetToJSON(e, 3, fileType);
+                    } else if(fileType === "periodAttendance"){
+                        ConvertSheetToJSON(e, 0, fileType);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
 
             })(file)
         }
@@ -745,10 +788,13 @@ $( document ).ready(function() {
         });
     }
 
-    /*Attaches all upload buttons and names after the initial*/
-    function AttachInputTextMultiple(textNodeArray, i, totalNumFiles) {
-        /*textNodeArray is either an array of text nodes or in the case below
-        * it will simply be a bool that is false*/
+    /*Attaches all upload buttons and names after the initial*
+     *textNodeArray is either an array of text nodes or in the case below
+     * it will simply be a bool that is false.
+     * finalRequest is bool that signifies of there will be more info needed before the report
+     * can be generated or not, aka will the button at the end be submit or next.*/
+    function AttachInputTextMultiple(textNodeArray, i, totalNumFiles, finalRequest) {
+
 
         /*this is for attaching one title and multiple upload buttons.
         * This is used when uploading multiple files of the same type,
@@ -773,15 +819,18 @@ $( document ).ready(function() {
                 });
                 /*when the appropriate number of upload file
                 * buttons have been generated, attach the
-                * submit button to the end.
-                * ***This might need to be changed later, when we need to***
-                * ***upload many of 2 types of files*** */
+                * submit button to the end if finalrequest is true, if it is
+                * false then attach the next button.*/
                 if(i === totalNumFiles - 1){
-                    $(newInnerInput).after(TheButGenerator("Next"));
+                    if(finalRequest){
+                        $(newInnerInput).after(TheButGenerator("Submit"));
+                    }else {
+                        $(newInnerInput).after(TheButGenerator("Next"));
+                    }
                 }
             }
             /*when attaching many upload buttons
-            * for different types of files. */
+            * for different types of files.*/
         }else{
             for(i; i < totalNumFiles; i++){
                 let newInnerInput = '#innerInputDiv' + i;
@@ -808,7 +857,11 @@ $( document ).ready(function() {
                 * buttons have been generated, attach the
                 * submit button to the end.*/
                 if(i === totalNumFiles - 1){
-                    $(newInnerInput).after(TheButGenerator("Submit"));
+                    if(finalRequest){
+                        $(newInnerInput).after(TheButGenerator("Submit"));
+                    }else {
+                        $(newInnerInput).after(TheButGenerator("Next"));
+                    }
                 }
             }
         }
@@ -837,7 +890,7 @@ $( document ).ready(function() {
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
-            AttachInputTextMultiple(textNodeArray, 1, 2);
+            AttachInputTextMultiple(textNodeArray, 1, 2, true);
 
             /*Convert Aries Query Spring*/
         }else if(theSelector.value === arrayOfPossibleChoices[3]){
@@ -849,27 +902,32 @@ $( document ).ready(function() {
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
-            AttachInputTextMultiple(textNodeArray, 1, 2);
+            AttachInputTextMultiple(textNodeArray, 1, 2, true);
 
             /*Monthly Lunch ASSETs Report*/
-        }else if(theSelector.value === arrayofpossiblechoices[5]){
+        }else if(theSelector.value === arrayOfPossibleChoices[5]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
             /*Monthly After School ASSETs Report*/
-        }else if(theSelector.value === arrayofpossiblechoices[6]){
+        }else if(theSelector.value === arrayOfPossibleChoices[6]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
             /*Monthly Migrant Ed Report*/
-        }else if(theSelector.value === arrayofpossiblechoices[7]){
+        }else if(theSelector.value === arrayOfPossibleChoices[7]){
             NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
             MonthWanted();
             $('#innerInputDiv1').after(TheButGenerator("Next"));
+
+            /*End of fall semester report*/
+        }else if(theSelector.value === arrayOfPossibleChoices[8]){
+            NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
+            $('#innerInputDiv0').after(TheButGenerator("Next"));
         }
     }
     
@@ -1113,7 +1171,7 @@ $( document ).ready(function() {
             /*Names of Months, needed to find next month so the correct part of the log will be taken in*/
             const arrayOfMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
                 "October", "November", "December"];
-            if((userEnteredData.month === "December") || (userEnteredData.month === "June")){
+            if((userEnteredData.month === "December") || (userEnteredData.month === "June") || (theSelector.value === arrayOfPossibleChoices[8])){
                 followingMonth = undefined;
             }else{
                 for(let j = 0; j < arrayOfMonths.length; j++){
@@ -1123,8 +1181,6 @@ $( document ).ready(function() {
                 }
 
             }
-
-
             /*The global object needs to be changed to store
             * the sheet array but the proxy just needs to have its value updated
             * so that it will trigger the handler*/
