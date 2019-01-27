@@ -142,12 +142,6 @@ body{
 }
 
 
-.ui-selectmenu-menu{
-
-
-}
-
-
 
 
 #monthSelector-button{
@@ -191,10 +185,6 @@ body{
 }
 
 
-.displayBox{
-
-}
-
 .messageOuter{
     display: flex;
     flex-direction: row;
@@ -231,6 +221,7 @@ body{
 }
 
 .errorMessage{
+    /*Fill in later for error messages*/
 
 }
 
