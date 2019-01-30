@@ -1,4 +1,5 @@
-# Woodland_High_Community_Service_Learning_Center_Attendance
+# Woodland High School
+# Community Service Learning Center Attendance
 This is an attendance system that was created to keep attendance at the Woodland High School Community Service Learning Center. The Community Service Learning Center is a center where students can get free tutoring on any of their school subjects. The Community Service Learning Center is funded primarily by grants, so keeping accurate attendance data for all students tutored is essential to keeping the center running. The attendance system consists of 3 different parts; the report generator, auto saving script, and the period attendance sheet.
 
 ### Report Generator
