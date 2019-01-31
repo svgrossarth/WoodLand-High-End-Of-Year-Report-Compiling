@@ -15,7 +15,9 @@ $( document ).ready(function() {
         arrayOfPossibleChoices : ["Total Count", "Convert Aries Query Fall", "Convert Aries Query Fall With ALL Programs",
             "Convert Aries Query Spring", "Convert Aries Query Spring With ALL Programs",
             "Monthly Lunch ASSETs Report", "Monthly After School ASSETs Report", "Monthly Migrant Ed Report",
-            "End Of Fall Semester Totals"],
+            "End Of Fall Semester Totals", "End Of Fall Semester Lunch and After School Totals",
+            "Test for Peer Tutors End Of Fall Semester", "Test for UC Davis Tutors End Of Fall Semester",
+            "Test for Period Attendance End Of Fall Semester"],
 
     /*Saves user data entered after selecting report*/
     userEnteredData : {
@@ -38,6 +40,7 @@ $( document ).ready(function() {
     },
 
         numberOfDuplicatesFound : 0,
+        numberOfcountsAdded : 0,
 };
 
 
@@ -170,7 +173,31 @@ $( document ).ready(function() {
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
             NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
             $('#innerInputDiv0').after(TheButGenerator("Next"));
+
+            /*End of fall after school and lunch report*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[9]){
+            let textNode = 'Select Period Attendance Files From August to December';
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(false, 1, 5, true);
+
+            /*Test for fall peer tutors*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[10]){
+            NumOfFilesDesired("Number Of Peer Tutor Logs To Be Used In Report");
+            $('#innerInputDiv0').after(TheButGenerator("Next"));
+
+            /*Test for fall UC Davis tutors*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[11]){
+            NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
+            $('#innerInputDiv0').after(TheButGenerator("Next"));
+
+            /*Test for fall period attendance*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[12]){
+            let textNode = 'Select Period Attendance Files From August to December';
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(false, 1, 5, true);
         }
+
+
     }
 
 
@@ -380,12 +407,17 @@ $( document ).ready(function() {
     /*Run after the user hits next*/
     function NextRequest() {
         let text0 = $('#text0');
+        if(theSelector.value === globalObject.arrayOfPossibleChoices[8] ||
+            theSelector.value === globalObject.arrayOfPossibleChoices[10] ||
+            theSelector.value === globalObject.arrayOfPossibleChoices[11]){
+            globalObject.userEnteredData.month = "August";
+        }
         /*After entering how many tutor logs to enter and maybe what month you want go here*/
         if(text0.text() === 'Number Of UCD Tutor Logs To Be Used In Report'){
             globalObject.userEnteredData.numberOfUCDTutorFiles = Number($('#fileCount').val());
-            if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
-                globalObject.userEnteredData.month = "August";
-            } else {
+            if(theSelector.value === globalObject.arrayOfPossibleChoices[5] ||
+                theSelector.value === globalObject.arrayOfPossibleChoices[6] ||
+                theSelector.value === globalObject.arrayOfPossibleChoices[7]){
                 globalObject.userEnteredData.month = $('#monthSelector-button').text().trim();
             }
 
@@ -394,9 +426,18 @@ $( document ).ready(function() {
             clearHTMLAfterSelector();
             AttachInputTextInital(textNode);
             if(globalObject.userEnteredData.numberOfUCDTutorFiles === 1){
-                $('#innerInputDiv0').after(TheButGenerator("Next"));
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value) {
+                    $('#innerInputDiv0').after(TheButGenerator("Next"));
+                } else if (globalObject.arrayOfPossibleChoices[11] === theSelector.value) {
+                    $('#innerInputDiv0').after(TheButGenerator("Submit"));
+                }
             }else{
-                AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, false);
+                /*Checks which report is being generated to determine what should be added to DOM*/
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value){
+                    AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, false);
+                } else if (globalObject.arrayOfPossibleChoices[11] === theSelector.value){
+                    AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, true);
+                }
             }
 
             /*After getting all the tutor logs uploaded, now time to know how many
@@ -416,7 +457,13 @@ $( document ).ready(function() {
             if(globalObject.userEnteredData.numberOfPeerTutorFiles === 1){
                 $('#innerInputDiv0').after(TheButGenerator("Next"));
             }else{
-                AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, false);
+
+                /*Checks which report is being generated to determine what should be added to DOM*/
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value){
+                    AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, false);
+                } else if (globalObject.arrayOfPossibleChoices[10] === theSelector.value){
+                    AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, true);
+                }
             }
 
             /*After getting all the peer tutor logs go here to get the period attendance file*/
@@ -480,6 +527,22 @@ $( document ).ready(function() {
             * This is really the final step after we have gotten all the UCD tutor logs
             * and after we have gotten all the peer tutor logs*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+            GetManyOfTheSameFile("periodAttendance");
+
+            /*End Of Fall Semester Lunch and After School Report*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[9]){
+            GetManyOfTheSameFile("periodAttendance");
+
+            /*End Of Fall Semester Peer tutor test*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[10]){
+            GetManyOfTheSameFile("tutorMonthlyLog");
+
+            /*End Of Fall Semester UCD tutor test*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[11]){
+            GetManyOfTheSameFile("tutorMonthlyLog");
+
+            /*End Of Fall Semester Period Attendance test*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[12]){
             GetManyOfTheSameFile("periodAttendance");
         }
     }
@@ -571,7 +634,10 @@ $( document ).ready(function() {
             /*Names of Months, needed to find next month so the correct part of the log will be taken in*/
             const arrayOfMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
                 "October", "November", "December"];
-            if((globalObject.userEnteredData.month === "December") || (globalObject.userEnteredData.month === "June") || (theSelector.value === globalObject.arrayOfPossibleChoices[8])){
+            if((globalObject.userEnteredData.month === "December") || (globalObject.userEnteredData.month === "June") ||
+                (theSelector.value === globalObject.arrayOfPossibleChoices[8])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[10])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[11])){
                 followingMonth = undefined;
             }else{
                 for(let j = 0; j < arrayOfMonths.length; j++){
@@ -755,6 +821,42 @@ $( document ).ready(function() {
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
                 CreateNewExcel(sheetAr, "End Of Fall Semester Totals.xlsx");
+
+                /*End Of Fall Semester Lunch and After School*/
+            }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[9]
+                && globalObject.objSheetAr.periodAttendance.length === 5){
+                ModifyUpLoads(globalObject.objSheetAr);
+                var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
+                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
+                let sheetAr = TotalCount(concatendatedSuperSheet);
+                CreateNewExcel(sheetAr, "End Of Fall Semester Lunch and After School Totals.xlsx");
+
+                /*End Of Fall Semester Peer tutor test*/
+            }else if(prop === "tutorMonthlyLog" && theSelector.value === globalObject.arrayOfPossibleChoices[10]
+                && globalObject.objSheetAr.tutorMonthlyLog.length === Number(globalObject.userEnteredData.numberOfPeerTutorFiles)){
+                ModifyUpLoads(globalObject.objSheetAr);
+                var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
+                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
+                let sheetAr = TotalCount(concatendatedSuperSheet);
+                CreateNewExcel(sheetAr, "End Of Fall Semester Peer Tutor Test.xlsx");
+
+                /*End Of Fall Semester UC Davis tutor test*/
+            }else if(prop === "tutorMonthlyLog" && theSelector.value === globalObject.arrayOfPossibleChoices[11]
+                && globalObject.objSheetAr.tutorMonthlyLog.length === Number(globalObject.userEnteredData.numberOfUCDTutorFiles)){
+                ModifyUpLoads(globalObject.objSheetAr);
+                var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
+                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
+                let sheetAr = TotalCount(concatendatedSuperSheet);
+                CreateNewExcel(sheetAr, "End Of Fall Semester UC Davis Tutor Test.xlsx");
+
+                /*End Of Fall Semester Period Attendance test*/
+            }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[12]
+                && globalObject.objSheetAr.periodAttendance.length === 5){
+                ModifyUpLoads(globalObject.objSheetAr);
+                var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
+                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
+                let sheetAr = TotalCount(concatendatedSuperSheet);
+                CreateNewExcel(sheetAr, "End Of Fall Semester Period Attendance test.xlsx");
             }
         }
     };
@@ -805,6 +907,7 @@ $( document ).ready(function() {
                             }
                         }
                     }else{
+                        globalObject.numberOfcountsAdded--;
                         /*removes the inner loop row, other rows don't
                          * have to be compared to it over and over again
                          * when we have already gotten the information for it*/
@@ -813,6 +916,7 @@ $( document ).ready(function() {
                     }
                 }
             }else{
+                globalObject.numberOfcountsAdded--;
                 /*removes the outer loop row, when it doesn't have a student ID
                 * so we don't compare other rows to it over and over again.*/
                 sheetAr.splice(i, 1);
@@ -1345,6 +1449,8 @@ $( document ).ready(function() {
         if(upLoadedRow["Times Seen"] !== undefined){
             upLoadedRow["Count"] = upLoadedRow["Times Seen"];
         } else {
+            console.log("A student didn't have times seen defined so I added 1");
+            globalObject.numberOfcountsAdded++;
             upLoadedRow["Count"] = 1;
         }
         delete upLoadedRow["Times Seen"];
@@ -1428,6 +1534,7 @@ $( document ).ready(function() {
    * turned in a new excel sheet and then workbook.*/
     function CreateNewExcel(sheetAr, newExcelName, ASSETsReport = false){
         console.log("The number of duplicates found was " + globalObject.numberOfDuplicatesFound);
+        console.log("The number of counts added was " + globalObject.numberOfcountsAdded);
         if(ASSETsReport){
             /*ASSETs reports need special headers for the columns*/
             var newSheet = XLSX.utils.json_to_sheet(sheetAr, {header:["Count","StudentName","Grade",
