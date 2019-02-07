@@ -216,6 +216,9 @@ $( document ).ready(function() {
         globalObject.userEnteredData.month = "";
         globalObject.userEnteredData.numberOfUCDTutorFiles = "";
 
+        globalObject.numberOfcountsAdded = 0;
+        globalObject.numberOfDuplicatesFound = 0;
+
         globalObject.objSheetAr.periodAttendance = [];
         globalObject.objSheetAr.tutorMonthlyLog = [];
         globalObject.objSheetAr.peerTutorMonthlyLog = [];
@@ -875,7 +878,7 @@ $( document ).ready(function() {
         for(let i = 0; i < sheetAr.length; i++){
             if(sheetAr[i]["Student ID"] !== undefined) {
                 AddAndRemoveKeys(sheetAr[i]);
-                removePeriodFromClass(sheetAr[i]);
+                //removePeriodFromClass(sheetAr[i]);
                 /*Inner loop that is used to compare each each row in the
                 * sheet to all other rows in it. In order to total the number
                 * of times the student was tutored*/
@@ -884,7 +887,7 @@ $( document ).ready(function() {
                         if (sheetAr[i]["Student ID"] === sheetAr[j]["Student ID"]) {
                             /*if it isn't the same row*/
                             if (i !== j) {
-                                removePeriodFromClass(sheetAr[j]);
+                                //removePeriodFromClass(sheetAr[j]);
                                 removeSubjectDuplicates(sheetAr[i], sheetAr[j], "Subject");
                                 ConcatenateOtherSubject(sheetAr[i], sheetAr[j]);
                                 UpdateLocation(sheetAr[i], sheetAr[j]);
@@ -907,7 +910,12 @@ $( document ).ready(function() {
                             }
                         }
                     }else{
-                        globalObject.numberOfcountsAdded--;
+                        if(sheetAr[j]["Student Sign Out (Tutor Name)"] === undefined && sheetAr[j]["Time In"] === undefined
+                            && sheetAr[j]["Time Out"] === undefined){
+                            console.log("Found a row with out a student id and so removing it. And it is not" +
+                                        " a row from period attendance.");
+                            globalObject.numberOfcountsAdded--;
+                        }
                         /*removes the inner loop row, other rows don't
                          * have to be compared to it over and over again
                          * when we have already gotten the information for it*/
@@ -916,7 +924,12 @@ $( document ).ready(function() {
                     }
                 }
             }else{
-                globalObject.numberOfcountsAdded--;
+                if(sheetAr[i]["Student Sign Out (Tutor Name)"] === undefined && sheetAr[i]["Time In"] === undefined
+                    && sheetAr[i]["Time Out"] === undefined){
+                    console.log("Found a row with out a student id and so removing it. And it is not" +
+                        " a row from period attendance.");
+                    globalObject.numberOfcountsAdded--;
+                }
                 /*removes the outer loop row, when it doesn't have a student ID
                 * so we don't compare other rows to it over and over again.*/
                 sheetAr.splice(i, 1);
@@ -1118,31 +1131,52 @@ $( document ).ready(function() {
     function removePeriodFromClass(objectContainer) {
         /*Only entered if there IS a subject, else do nothing.*/
         if(objectContainer["Subject"] !== undefined) {
-            let justClass = ""; //
+            let justClass = "";
             let longClass = "";
-            justClass = objectContainer["Subject"].split("-"); // splits subject at each '-'
-            /*Entered if the class had an additional '-'
-            * ex. 2 - English 1 - 2
-            * rebuilds so it is ex. English 1- 2*/
-            if (justClass.length > 2) {
-                for (let i = 0; i < justClass.length - 1; i++) {
-                    if (i === 0) {
-                        longClass += justClass[i + 1].trim();
-                    } else {
-                        longClass += " - " + justClass[i + 1];//note English 1 - 2 has spaces while Pre-Calculus doesn't,
-                        // here Pre-Calculus will now be Pre - Calculus
+            let seperateClasses = objectContainer["Subject"].split(","); // splits up the subjects at each ',' if there is multiple subjects
+
+            objectContainer["Subject"] = ""; //this needs to be clearned so we can rebuild it
+
+            if(seperateClasses.length > 0){
+                for(let i = 0; i < seperateClasses.length; i++ ){
+                    justClass = seperateClasses[i].split("-");
+
+                    /*Entered if the class had an additional '-'
+                    * ex. 2 - English 1 - 2
+                    * rebuilds so it is ex. English 1 - 2*/
+                    if (justClass.length > 2) {
+                        for (let i = 0; i < justClass.length - 1; i++) {
+                            if (i === 0) {
+                                longClass += justClass[i + 1].trim();
+                            } else {
+                                if(justClass[1].trim() === "Pre"){ //This is to keep Pre-Calculus and not Pre - Calculus
+                                    longClass += "-" + justClass[i + 1].trim();
+                                }else{
+                                    longClass += " - " + justClass[i + 1].trim();
+                                }
+
+                            }
+                        }
+                        justClass = longClass;
+
+                        /*A class with out an extra '-'
+                        * ex. 4 - Calculus
+                        * Becomes ex. Calculus*/
+                    } else if (justClass[1]) {
+                        justClass = justClass[1].trim();
+                    } else { // when subject is empty
+                        justClass = justClass[0].trim();
                     }
+
+                    if(i === seperateClasses.length - 1){
+                        objectContainer["Subject"] += justClass;
+                    }else{
+                        objectContainer["Subject"] += justClass + ", ";
+                    }
+
                 }
-                justClass = longClass;
-                /*A class with out an extra '-'
-                * ex. 4 - Calculus
-                * Becomes ex. Calculus*/
-            } else if (justClass[1]) {
-                justClass = justClass[1].trim();
-            } else { // when subject is empty
-                justClass = justClass[0].trim();
+
             }
-            objectContainer["Subject"] = justClass;
         }
     }
 
@@ -1152,23 +1186,40 @@ $( document ).ready(function() {
     * subjects to the current list.*/
     function removeSubjectDuplicates(orginalList, newList, keyword){
         /*Makes sure both lists exist and they both are not empty*/
-        if((orginalList[keyword] !== undefined) && (newList[keyword] !== undefined)
-            && (orginalList[keyword] !== "") && (newList[keyword] !== "")) {
-            let outterLoopSubjects = orginalList[keyword].split(",");
-            let innerLoopSubjects = newList[keyword].split(",");
+        if(((orginalList[keyword] !== undefined) || (newList[keyword] !== undefined))
+            && ((orginalList[keyword] !== "") || (newList[keyword] !== ""))) {
+            let outterLoopSubjects;
+            if(orginalList[keyword] === undefined){
+                outterLoopSubjects = [""];
+            }else {
+                outterLoopSubjects = orginalList[keyword].split(",");
+            }
+            /*Map applies something to each element of the arrary.
+            * s => s.trim() is akin to function (s) { return s.trim()}
+            * just a short notation.
+            * https://stackoverflow.com/questions/19293997/javascript-apply-trim-function-to-each-string-in-an-array*/
+            outterLoopSubjects = outterLoopSubjects.map(s => s.trim());
+            let innerLoopSubjects;
+            if(newList[keyword] === undefined){
+                innerLoopSubjects = [""];
+            }else {
+                innerLoopSubjects = newList[keyword].split(",");
+            }
+            innerLoopSubjects = innerLoopSubjects.map(s => s.trim());
             let newUniqueSubject = true;
             /*Compares current list of subjects to new list of subjects checking
             * for a new unique subject*/
             for (let j2 = 0; j2 < innerLoopSubjects.length; j2++) {
                 for (let i2 = 0; i2 < outterLoopSubjects.length; i2++) {
-                    if (innerLoopSubjects[j2].trim() === outterLoopSubjects[i2].trim()) {
+                    if (innerLoopSubjects[j2] === outterLoopSubjects[i2]) {
                         newUniqueSubject = false;
                         break;
                     }
                 }
-                if (newUniqueSubject) {
+                if (newUniqueSubject && innerLoopSubjects[j2]!== "") {
                     orginalList[keyword] = orginalList[keyword] + ", " + innerLoopSubjects[j2].trim();
                     outterLoopSubjects = orginalList[keyword].split(",");
+                    outterLoopSubjects = outterLoopSubjects.map(s => s.trim());
                 }
                 newUniqueSubject = true;
             }
@@ -1290,22 +1341,35 @@ $( document ).ready(function() {
                 date = upLoadedSheet[i]["Date"];
                 period = upLoadedSheet[i]["Period"];
             }
+
+
+
+
+            /*If the row has no name or student ID*/
             if((upLoadedSheet[i]["First Name"] === "" || upLoadedSheet[i]["First Name"] === undefined)
                 && (upLoadedSheet[i]["Last Name"] === "" || upLoadedSheet[i]["Last Name"] === undefined)
                 && (upLoadedSheet[i]["Student ID"] === "" || upLoadedSheet[i]["Student ID"] === undefined)
                 && (upLoadedSheet[i]["Perm ID #"] === "" || upLoadedSheet[i]["Perm ID #"] === undefined)){
                 upLoadedSheet.splice(i, 1);
                 i--;
+                continue;
+
+                /*if it is row that doesn't actually contain a student*/
             } else if (upLoadedSheet[i]["Perm ID #"] === "Total # of Sessions:"
                 || upLoadedSheet[i]["Perm ID #"] === "Total # of Students:"
                 || upLoadedSheet[i]["Perm ID #"] === "Perm ID #"){
                 upLoadedSheet.splice(i, 1);
                 i--;
+                continue;
+
+                /*updates that the student was worked with in class*/
             } else if (location === "inClass"){
                 upLoadedSheet[i].LC = "";
                 upLoadedSheet[i].IC = "X";
                 upLoadedSheet[i].AS = "";
                 ChangeProperties(upLoadedSheet[i]);
+
+                /*when a student was tutored in the center it updates if it was during AS or not*/
             } else if (location === "periodAttendance"){
                 upLoadedSheet[i].IC = "";
                 if(upLoadedSheet[i]["Period"] === "Lunch" || upLoadedSheet[i]["Period"] === "After School"){
@@ -1328,6 +1392,7 @@ $( document ).ready(function() {
                         globalObject.numberOfDuplicatesFound++;
                         upLoadedSheet.splice(i, 1);
                         i--;
+                        continue;
                         /*the student has not already been counted*/
                     } else{
                         studentsInPeriod.add(upLoadedSheet[i]["Student ID"]);
@@ -1341,6 +1406,12 @@ $( document ).ready(function() {
                     studentsInPeriod.clear();
                     studentsInPeriod.add(upLoadedSheet[i]["Student ID"]);
                 }
+            }
+
+            /*Removes the period from from period attendance subjects*/
+            if(location === "periodAttendance" && upLoadedSheet[i]["Subject"] !== undefined){
+                removePeriodFromClass(upLoadedSheet[i]);
+
             }
         }
     }
@@ -1449,7 +1520,7 @@ $( document ).ready(function() {
         if(upLoadedRow["Times Seen"] !== undefined){
             upLoadedRow["Count"] = upLoadedRow["Times Seen"];
         } else {
-            console.log("A student didn't have times seen defined so I added 1");
+            //console.log("A student didn't have times seen defined so I added 1");
             globalObject.numberOfcountsAdded++;
             upLoadedRow["Count"] = 1;
         }
@@ -1535,6 +1606,8 @@ $( document ).ready(function() {
     function CreateNewExcel(sheetAr, newExcelName, ASSETsReport = false){
         console.log("The number of duplicates found was " + globalObject.numberOfDuplicatesFound);
         console.log("The number of counts added was " + globalObject.numberOfcountsAdded);
+        let actualDif = globalObject.numberOfDuplicatesFound - globalObject.numberOfcountsAdded;
+        console.log("Meaning the actual difference from manually found totals should be " + actualDif);
         if(ASSETsReport){
             /*ASSETs reports need special headers for the columns*/
             var newSheet = XLSX.utils.json_to_sheet(sheetAr, {header:["Count","StudentName","Grade",
