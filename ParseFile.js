@@ -1342,9 +1342,6 @@ $( document ).ready(function() {
                 period = upLoadedSheet[i]["Period"];
             }
 
-
-
-
             /*If the row has no name or student ID*/
             if((upLoadedSheet[i]["First Name"] === "" || upLoadedSheet[i]["First Name"] === undefined)
                 && (upLoadedSheet[i]["Last Name"] === "" || upLoadedSheet[i]["Last Name"] === undefined)
@@ -1376,8 +1373,15 @@ $( document ).ready(function() {
                     upLoadedSheet[i].LC = "";
                     upLoadedSheet[i].AS = "X";
                 } else{
-                    upLoadedSheet[i].LC = "X";
-                    upLoadedSheet[i].AS = "";
+                    if(globalObject.arrayOfPossibleChoices[9] === theSelector.value){
+                        upLoadedSheet.splice(i, 1);
+                        i--;
+                        continue;
+
+                    }else{
+                        upLoadedSheet[i].LC = "X";
+                        upLoadedSheet[i].AS = "";
+                    }
                 }
 
                 /*Checks for duplicate entries in period attendance, aka one student was logged in multiple times
@@ -1526,14 +1530,14 @@ $( document ).ready(function() {
         }
         delete upLoadedRow["Times Seen"];
 
-        if(upLoadedRow["AV"] === ""){
+        if(upLoadedRow["AV"] === "" || upLoadedRow["AV"] === " "){
             upLoadedRow["AVID"] = "";
         } else {
             upLoadedRow["AVID"] = "X";
         }
         delete upLoadedRow["AV"];
 
-        if(upLoadedRow["EL"] === ""){
+        if(upLoadedRow["EL"] === "" || upLoadedRow["EL"] === " "){
             upLoadedRow["English Learner"] = "";
         } else {
             upLoadedRow["English Learner"] = "X";
