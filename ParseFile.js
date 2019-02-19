@@ -165,7 +165,8 @@ $( document ).ready(function() {
 
             /*Monthly Migrant Ed Report*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
-            NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
+            var textNodeAttendance = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
+            AttachInputTextInital(textNodeAttendance);
             MonthWanted();
             $('#innerInputDiv1').after(TheButGenerator("Next"));
 
@@ -419,8 +420,7 @@ $( document ).ready(function() {
         if(text0.text() === 'Number Of UCD Tutor Logs To Be Used In Report'){
             globalObject.userEnteredData.numberOfUCDTutorFiles = Number($('#fileCount').val());
             if(theSelector.value === globalObject.arrayOfPossibleChoices[5] ||
-                theSelector.value === globalObject.arrayOfPossibleChoices[6] ||
-                theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                theSelector.value === globalObject.arrayOfPossibleChoices[6]){
                 globalObject.userEnteredData.month = $('#monthSelector-button').text().trim();
             }
 
@@ -429,14 +429,16 @@ $( document ).ready(function() {
             clearHTMLAfterSelector();
             AttachInputTextInital(textNode);
             if(globalObject.userEnteredData.numberOfUCDTutorFiles === 1){
-                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value) {
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value) {
                     $('#innerInputDiv0').after(TheButGenerator("Next"));
                 } else if (globalObject.arrayOfPossibleChoices[11] === theSelector.value) {
                     $('#innerInputDiv0').after(TheButGenerator("Submit"));
                 }
             }else{
                 /*Checks which report is being generated to determine what should be added to DOM*/
-                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value){
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, false);
                 } else if (globalObject.arrayOfPossibleChoices[11] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, true);
@@ -458,11 +460,18 @@ $( document ).ready(function() {
             clearHTMLAfterSelector();
             AttachInputTextInital(textNode);
             if(globalObject.userEnteredData.numberOfPeerTutorFiles === 1){
-                $('#innerInputDiv0').after(TheButGenerator("Next"));
+                /*Checks which report is being generated to determine what should be added to DOM*/
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value) {
+                    $('#innerInputDiv0').after(TheButGenerator("Next"));
+                } else if (globalObject.arrayOfPossibleChoices[10] === theSelector.value){
+                    $('#innerInputDiv0').after(TheButGenerator("Submit"));
+                }
             }else{
 
                 /*Checks which report is being generated to determine what should be added to DOM*/
-                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value){
+                if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, false);
                 } else if (globalObject.arrayOfPossibleChoices[10] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, true);
@@ -473,17 +482,28 @@ $( document ).ready(function() {
         } else if(text0.text() === 'Select Peer Tutor Monthly Logs' && theSelector.value === globalObject.arrayOfPossibleChoices[7]){
             GetManyOfTheSameFile("tutorMonthlyLog");
             clearHTMLAfterSelector();
-            let textNodeAttendance = document.createTextNode("Please Select Period Attendance File");
+            let monthNeeded = "Please Select Period Attendance File for the month of " + globalObject.userEnteredData.month +".";
+            let textNodeAttendance = document.createTextNode(monthNeeded);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
             /*After selecting the peer tutor logs to be used go here to get all the period attendance files needed*/
-        } else if(text0.text() === 'Select Peer Tutor Monthly Logs' && theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+        } else if(text0.text() === 'Select Peer Tutor Monthly Logs' &&
+                    theSelector.value === globalObject.arrayOfPossibleChoices[8]){
             GetManyOfTheSameFile("tutorMonthlyLog");
             clearHTMLAfterSelector();
             let textNode = 'Select Period Attendance Files From August to December';
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(false, 1, 5, true);
+        } else if(text0.text() === 'Please Select Excel Sheet Containing All Program Roster\'s' &&
+                    theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+            GetEachProgramRoster();
+            globalObject.userEnteredData.month = $('#monthSelector-button').text().trim();
+            clearHTMLAfterSelector();
+            NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
+            $('#innerInputDiv0').after(TheButGenerator("Next"));
+
+
         }
 
     }
@@ -596,21 +616,31 @@ $( document ).ready(function() {
 
     /*Processing excel sheets that contain an
     * aries query and then a sheet containing all
-    * programs*/
+    * programs. This can now handle 2 scenarios. One for making the database for the
+     * excel file. The other is when creating a mig ed report.*/
     function GetEachProgramRoster() {
         var alignerDiv = document.getElementById("aligner");
-        var numOfFiles = alignerDiv.children.length - 1;
+        if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+            var numOfFiles = 1;
+        } else{
+            var numOfFiles = alignerDiv.children.length - 1;
+        }
         var arOfInputs = alignerDiv.children;
         /*Must be handled this way so each different file is handled
         * not just the same one repeated several times*/
         for(var i = 0; i < numOfFiles; i++){(function (file, i){
             var reader = new FileReader();
             reader.onload = function (e) {
-                if(i == 0){
-                    ConvertSheetToJSON(e, 0, "ariesQuery");
-                }else if(i == 1){
-                    ConvertSheetToJSONAllPrograms(e)
+                if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                    ConvertSheetToJSONAllPrograms(e);
+                } else{
+                    if(i == 0){
+                        ConvertSheetToJSON(e, 0, "ariesQuery");
+                    }else if(i == 1){
+                        ConvertSheetToJSONAllPrograms(e);
+                    }
                 }
+
             };
             reader.readAsArrayBuffer(file);
 
@@ -766,12 +796,12 @@ $( document ).ready(function() {
 
                 /*ASSETs Lunch Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[5]){
-                let sheetAr = ASSETsReport(globalObject.objSheetAr["periodAttendance"][0]);
+                let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
 
                 /*ASSETs After School Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[6]){
-                let sheetAr = ASSETsReport(globalObject.objSheetAr["periodAttendance"][0]);
+                let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
                 CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
 
                 /*Student Roster with out programs, fall*/
@@ -810,10 +840,14 @@ $( document ).ready(function() {
                 sheetAr = AddPrograms(sheetAr);
                 CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
 
-                /*Monthly Mig Report --in progess*/
+                /*Monthly Mig Report*/
             }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[7]){
                 if(globalObject.objSheetAr.tutorMonthlyLog.length > 1){
-                    var conatenatedSheet = ConcatenateSheets(globalObject.objSheetAr.tutorMonthlyLog);
+                    let tutorConatenatedSheet = ConcatenateSheets(globalObject.objSheetAr.tutorMonthlyLog);
+                    let inClassTotals = SimplifiedTotalMig(tutorConatenatedSheet,
+                                                            globalObject.objSheetAr.migRoster);
+                    let pAttendLunchandAS = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
+
                 }
 
                 /*End Of Fall Semester Totals*/
@@ -940,32 +974,55 @@ $( document ).ready(function() {
     }
 
 
-    /*Builds the ASSETs report row by, one student at a time
+    /*Builds the ASSETs and Mig report row by, one student at a time
    * Used to build either the lunch or after school report*/
-    function ASSETsReport(periodAttendance) {
-        let ASSETsAr = [];
+    function MonthlyReport(periodAttendance) {
+        let monthlyAr = [];
+        if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+            monthlyAr[0] = [];
+            monthlyAr[1] = [];
+        }
         let count = 1;
         for(let i = 0; i < periodAttendance.length; i++){
             if(periodAttendance[i]["Student ID"] !== undefined && periodAttendance[i]["First Name"] !== undefined) {
                 let theStudent;
                 /*Lunch*/
                 if (theSelector.value === globalObject.arrayOfPossibleChoices[5]) {
-                    theStudent = InitializeStudentBuilder(periodAttendance[i], "Lunch", count, ASSETsAr);
+                    theStudent = InitializeStudentBuilder(periodAttendance[i], "Lunch", count, monthlyAr);
                     if (theStudent.Count !== "") {
                         count++;
-                        ASSETsAr.push(theStudent);
+                        monthlyAr.push(theStudent);
                     }
                     /*After School*/
                 } else if (theSelector.value === globalObject.arrayOfPossibleChoices[6]) {
-                    theStudent = InitializeStudentBuilder(periodAttendance[i], "After School", count, ASSETsAr);
+                    theStudent = InitializeStudentBuilder(periodAttendance[i], "After School", count, monthlyAr);
                     if (theStudent.Count !== "") {
                         count++;
-                        ASSETsAr.push(theStudent);
+                        monthlyAr.push(theStudent);
+                    }
+                    /*Mig Ed needs an After School and a Lunch portion*/
+                } else if (theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                    let migRoster = globalObject.objSheetAr.migRoster;
+                    for(let j = 0; j < migRoster.length; j++){
+                        if(migRoster[j]["Student ID"] === periodAttendance[i]["Student ID"]){
+                            theStudent = InitializeStudentBuilder(periodAttendance[i], "Lunch", count, monthlyAr[0]);
+                            if (theStudent.Count !== "") {
+                                count++;
+                                /*monthlyAr[0] is for lunch*/
+                                monthlyAr[0].push(theStudent);
+                            }
+                            theStudent = InitializeStudentBuilder(periodAttendance[i], "After School", count, monthlyAr[1]);
+                            if (theStudent.Count !== "") {
+                                count++;
+                                /*monthlyAr[1] is for After School*/
+                                monthlyAr[1].push(theStudent);
+                            }
+                        }
                     }
                 }
             }
         }
-        return ASSETsAr;
+        return monthlyAr;
     }
 
 
@@ -1010,6 +1067,36 @@ $( document ).ready(function() {
             }
         }
         return sheetAr;
+    }
+
+    /*A simplified version of total count that only cares about the total number of sessions for
+     * Mig ED students. */
+    function SimplifiedTotalMig(inClassConcat, migRoster) {
+        let inClassTotal = [];
+        for(let i = 0; i < migRoster.length; i++){
+            let newStudent = {
+                "Student Name": migRoster[i]["Last"] + ", " + migRoster[i]["First"],
+                "In Class": 0
+            };
+
+            for(let j = 0; j < inClassConcat.length; j++){
+                if(inClassConcat[j]["Perm ID #"] !== undefined){
+                    if(migRoster[i]["Student ID"] === inClassConcat[j]["Perm ID #"]){
+                        newStudent["In Class"]++;
+                    }
+                }
+                else {
+                    inClassConcat.splice(j,1);
+                    j--;
+                    continue;
+                }
+
+            }
+
+            inClassTotal.push(newStudent);
+        }
+
+        return inClassTotal;
     }
 
 
@@ -1273,15 +1360,15 @@ $( document ).ready(function() {
     /*Calls function to build a student.
    * This determines if the student is being built for
    * the lunch or after school report.*/
-    function InitializeStudentBuilder(periodAttendanceRow, period, counter, ASSETsAr) {
+    function InitializeStudentBuilder(periodAttendanceRow, period, counter, monthlyAr) {
         let studentOb = new Student();
         let theDate = periodAttendanceRow.Date;
         let splitDate = theDate.split("/");
         let dayOfTheMonth = splitDate[1];
         if(period === "Lunch" && periodAttendanceRow["Period"] === "Lunch") {
-            studentOb = BuildStudentOb(ASSETsAr, periodAttendanceRow, dayOfTheMonth, "Lunch", counter);
+            studentOb = BuildStudentOb(monthlyAr, periodAttendanceRow, dayOfTheMonth, "Lunch", counter);
         }else if(period === "After School" && periodAttendanceRow["Period"] === "After School") {
-            studentOb = BuildStudentOb(ASSETsAr, periodAttendanceRow, dayOfTheMonth, "After School", counter);
+            studentOb = BuildStudentOb(monthlyAr, periodAttendanceRow, dayOfTheMonth, "After School", counter);
 
         }
         return studentOb;
@@ -1431,49 +1518,57 @@ $( document ).ready(function() {
     }
 
 
-    /*Builds up each student row for either of the ASSETs reports,
- including what days of the month they came*/
-    function BuildStudentOb (ASSETsAr, periodAttendanceRow, dayOfTheMonth, period, counter){
+    /*Builds up each student row for either of the ASSETs reports and the mig report,
+    including what days of the month they came*/
+    function BuildStudentOb (monthlyAr, periodAttendanceRow, dayOfTheMonth, period, counter){
         let alreadyBeenCounted = false;
         let studentOb = new Student();
         /*checks to to see if student has been counted already*/
-        for(var i = 0; i < ASSETsAr.length; i++){
-            if(ASSETsAr[i].StudentID === periodAttendanceRow["Student ID"]){
+        for(var i = 0; i < monthlyAr.length; i++){
+            if(monthlyAr[i].StudentID === periodAttendanceRow["Student ID"]){
                 alreadyBeenCounted = true;
                 break;
             }
         }
         /*If a student has already been counted
-        * this make sure there are not duplicate subjects in
+        * this will make sure there are not duplicate subjects in
         * their list of subjects and adds the day they were here*/
         if(alreadyBeenCounted){
             removePeriodFromClass(periodAttendanceRow);
 
-            removeSubjectDuplicates(ASSETsAr[i], periodAttendanceRow, "Subject");
+            removeSubjectDuplicates(monthlyAr[i], periodAttendanceRow, "Subject");
             if(periodAttendanceRow["Other Subject"]){
-                ASSETsAr[i]["Subject"] += ", " + periodAttendanceRow["Other Subject"];
+                monthlyAr[i]["Subject"] += ", " + periodAttendanceRow["Other Subject"];
             }
-            //ASSETsAr[i].Subject += ", " + periodAttendanceRow["Subject"];
+            //monthlyAr[i].Subject += ", " + periodAttendanceRow["Subject"];
             if(period === "Lunch"){
-                if(ASSETsAr[i][dayOfTheMonth] === ""){
-                    ASSETsAr[i][dayOfTheMonth] = "1";
+                if(monthlyAr[i][dayOfTheMonth] === ""){
+                    monthlyAr[i][dayOfTheMonth] = "1";
                     /*Checks for duplicates, i.e. same student,
                     * same day, same period*/
                 }else{
-                    console.log("Duplicate Found!! for " + ASSETsAr[i]["StudentName"] + " on the " + dayOfTheMonth);
+                    console.log("Duplicate Found!! for " + monthlyAr[i]["StudentName"] + " on the " + dayOfTheMonth);
                     globalObject.numberOfDuplicatesFound++;
-                    ASSETsAr[i][dayOfTheMonth] = "1";
+                    monthlyAr[i][dayOfTheMonth] = "1";
                 }
             }else if(period === "After School"){
 
-                if(ASSETsAr[i][dayOfTheMonth] === ""){
-                    ASSETsAr[i][dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                if(monthlyAr[i][dayOfTheMonth] === ""){
+                    if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                        monthlyAr[i][dayOfTheMonth] = "1";
+                    }else{
+                        monthlyAr[i][dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                    }
                     /*Checks for duplicates, i.e. same student,
                 * same day, same period*/
                 }else{
-                    console.log("Duplicate Found!! for " + ASSETsAr[i]["StudentName"] + " on the " + dayOfTheMonth);
+                    console.log("Duplicate Found!! for " + monthlyAr[i]["StudentName"] + " on the " + dayOfTheMonth);
                     globalObject.numberOfDuplicatesFound++;
-                    ASSETsAr[i][dayOfTheMonth] += TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                    if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                        monthlyAr[i][dayOfTheMonth] = "1";
+                    }else{
+                        monthlyAr[i][dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                    }
                 }
 
             }
@@ -1484,7 +1579,11 @@ $( document ).ready(function() {
             studentOb.Count = counter;
             studentOb.Grade = periodAttendanceRow["Grade"];
             studentOb.StudentID = periodAttendanceRow["Student ID"];
-            studentOb.StudentName = periodAttendanceRow["First Name"] + " " + periodAttendanceRow["Last Name"];
+            if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                studentOb.StudentName = periodAttendanceRow["Last Name"] + ", " + periodAttendanceRow["First Name"];
+            }else {
+                studentOb.StudentName = periodAttendanceRow["First Name"] + " " + periodAttendanceRow["Last Name"];
+            }
             removePeriodFromClass(periodAttendanceRow);
             /*Checks to see if there is anything in subject*/
             if(periodAttendanceRow["Subject"]){
@@ -1502,7 +1601,11 @@ $( document ).ready(function() {
                 studentOb.Lunch = "Y";
             }else{
                 studentOb.Lunch = "N";
-                studentOb[dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
+                    studentOb[dayOfTheMonth] = "1";
+                }else{
+                    studentOb[dayOfTheMonth] = TimeInCenter(periodAttendanceRow["Time Out"], periodAttendanceRow["Time In"]);
+                }
 
             }
         }
@@ -1607,12 +1710,12 @@ $( document ).ready(function() {
 
     /*After the given sheets have been parsed, here the result is
    * turned in a new excel sheet and then workbook.*/
-    function CreateNewExcel(sheetAr, newExcelName, ASSETsReport = false){
+    function CreateNewExcel(sheetAr, newExcelName, MonthlyReport = false){
         console.log("The number of duplicates found was " + globalObject.numberOfDuplicatesFound);
         console.log("The number of counts added was " + globalObject.numberOfcountsAdded);
         let actualDif = globalObject.numberOfDuplicatesFound - globalObject.numberOfcountsAdded;
         console.log("Meaning the actual difference from manually found totals should be " + actualDif);
-        if(ASSETsReport){
+        if(MonthlyReport){
             /*ASSETs reports need special headers for the columns*/
             var newSheet = XLSX.utils.json_to_sheet(sheetAr, {header:["Count","StudentName","Grade",
                     "StudentID","Lunch","1","2","3","4","5","6","7","8","9","10","11","12","13",
