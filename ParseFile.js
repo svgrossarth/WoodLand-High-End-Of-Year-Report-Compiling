@@ -797,12 +797,12 @@ $( document ).ready(function() {
                 /*ASSETs Lunch Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[5]){
                 let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", true);
+                CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", "ASSETs");
 
                 /*ASSETs After School Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[6]){
                 let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", true);
+                CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", "ASSETs");
 
                 /*Student Roster with out programs, fall*/
             } else if(theSelector.value === globalObject.arrayOfPossibleChoices[1]){
@@ -846,7 +846,11 @@ $( document ).ready(function() {
                     let tutorConatenatedSheet = ConcatenateSheets(globalObject.objSheetAr.tutorMonthlyLog);
                     let inClassTotals = SimplifiedTotalMig(tutorConatenatedSheet,
                                                             globalObject.objSheetAr.migRoster);
-                    let pAttendLunchandAS = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
+                    /*periodAttendLunchandAs[0] == lunch and periodAttendLunchandAs[0] == After school*/
+                    let periodAttendLunchandAS = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
+                    MigEdSimplify(periodAttendLunchandAS);
+                    let arrayOfSheets = [periodAttendLunchandAS[0],periodAttendLunchandAS[1], inClassTotals];
+                    CreateNewExcel(arrayOfSheets, "MigEdMonthlyReport.xlsx", "MigEd");
 
                 }
 
@@ -1082,7 +1086,7 @@ $( document ).ready(function() {
             for(let j = 0; j < inClassConcat.length; j++){
                 if(inClassConcat[j]["Perm ID #"] !== undefined){
                     if(migRoster[i]["Student ID"] === inClassConcat[j]["Perm ID #"]){
-                        newStudent["In Class"]++;
+                        newStudent["In Class"] += Number(inClassConcat[j]["Times Seen"]);
                     }
                 }
                 else {
@@ -1151,6 +1155,26 @@ $( document ).ready(function() {
         }
         return sheetAr;
     }
+
+    /*This takes the object created from monthly report function and trims it so
+    * it just what is needed for the mig ed report.*/
+    function MigEdSimplify(periodAttendLunchandAS){
+        for(let i = 0; i < periodAttendLunchandAS[0].length; i++){
+            delete periodAttendLunchandAS[0][i]["Count"];
+            delete periodAttendLunchandAS[0][i]["Lunch"];
+            delete periodAttendLunchandAS[0][i]["StudentID"];
+            delete periodAttendLunchandAS[0][i]["Grade"];
+        }
+
+        for(let i = 0; i < periodAttendLunchandAS[1].length; i++){
+            delete periodAttendLunchandAS[1][i]["Count"];
+            delete periodAttendLunchandAS[1][i]["Lunch"];
+            delete periodAttendLunchandAS[1][i]["StudentID"];
+            delete periodAttendLunchandAS[1][i]["Grade"];
+        }
+    }
+
+
 
     /*Goes through each of the uploaded excel sheets, now jsons, and works to
     * turn them into a uniform format to then parse*/
@@ -1716,17 +1740,43 @@ $( document ).ready(function() {
         let actualDif = globalObject.numberOfDuplicatesFound - globalObject.numberOfcountsAdded;
         console.log("Meaning the actual difference from manually found totals should be " + actualDif);
         if(MonthlyReport){
-            /*ASSETs reports need special headers for the columns*/
-            var newSheet = XLSX.utils.json_to_sheet(sheetAr, {header:["Count","StudentName","Grade",
-                    "StudentID","Lunch","1","2","3","4","5","6","7","8","9","10","11","12","13",
-                    "14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31",
-                    "empty_1","empty_2","Subject"]});
+            if(MonthlyReport === "ASSETs"){
+                /*ASSETs reports need special headers for the columns*/
+                var newSheet = XLSX.utils.json_to_sheet(sheetAr, {header:["Count","StudentName","Grade",
+                        "StudentID","Lunch","1","2","3","4","5","6","7","8","9","10","11","12","13",
+                        "14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31",
+                        "empty_1","empty_2","Subject"]});
+            }
+
+            else if(MonthlyReport === "MigEd"){
+                /*Mig Ed reports need special headers for the columns*/
+                var newSheet1 = XLSX.utils.json_to_sheet(sheetAr[0], {header:["StudentName",
+                        "1","2","3","4","5","6","7","8","9","10","11","12","13",
+                        "14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31",
+                        "empty_1","empty_2","Subject"]});
+                var newSheet2 = XLSX.utils.json_to_sheet(sheetAr[1], {header:["StudentName",
+                        "1","2","3","4","5","6","7","8","9","10","11","12","13",
+                        "14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31",
+                        "empty_1","empty_2","Subject"]});
+                var newSheet3 = XLSX.utils.json_to_sheet(sheetAr[2]);
+
+            }
         }else {
             var newSheet = XLSX.utils.json_to_sheet(sheetAr);
         }
         let newWorkBook = XLSX.utils.book_new();
-        let convertedSheet = "The compiled Sheet";
-        XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
+        if(sheetAr.length === undefined){
+            let convertedSheet = "The compiled Sheet";
+            XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
+        } else {
+            let sheetName = "Lunch";
+            XLSX.utils.book_append_sheet(newWorkBook, newSheet1, sheetName);
+            sheetName = "AfterSchool";
+            XLSX.utils.book_append_sheet(newWorkBook, newSheet2, sheetName);
+            sheetName = "InClassTotals";
+            XLSX.utils.book_append_sheet(newWorkBook, newSheet3, sheetName);
+        }
+
         XLSX.writeFile(newWorkBook, newExcelName);
         UpdateUserAboutFile(newExcelName);
     }
