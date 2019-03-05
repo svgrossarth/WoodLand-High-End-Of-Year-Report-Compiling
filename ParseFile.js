@@ -1765,16 +1765,16 @@ $( document ).ready(function() {
             var newSheet = XLSX.utils.json_to_sheet(sheetAr);
         }
         let newWorkBook = XLSX.utils.book_new();
-        if(sheetAr.length === undefined){
-            let convertedSheet = "The compiled Sheet";
-            XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
-        } else {
+        if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
             let sheetName = "Lunch";
             XLSX.utils.book_append_sheet(newWorkBook, newSheet1, sheetName);
             sheetName = "AfterSchool";
             XLSX.utils.book_append_sheet(newWorkBook, newSheet2, sheetName);
             sheetName = "InClassTotals";
             XLSX.utils.book_append_sheet(newWorkBook, newSheet3, sheetName);
+        } else {
+            let convertedSheet = "The compiled Sheet";
+            XLSX.utils.book_append_sheet(newWorkBook, newSheet, convertedSheet);
         }
 
         XLSX.writeFile(newWorkBook, newExcelName);
