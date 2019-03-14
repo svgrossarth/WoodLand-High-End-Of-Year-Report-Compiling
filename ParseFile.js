@@ -1258,7 +1258,7 @@ $( document ).ready(function() {
                     if (justClass.length > 2) {
                         for (let i = 0; i < justClass.length - 1; i++) {
                             if (i === 0) {
-                                longClass += justClass[i + 1].trim();
+                                longClass += justClass[1].trim();
                             } else {
                                 if(justClass[1].trim() === "Pre"){ //This is to keep Pre-Calculus and not Pre - Calculus
                                     longClass += "-" + justClass[i + 1].trim();
@@ -1270,11 +1270,27 @@ $( document ).ready(function() {
                         }
                         justClass = longClass;
 
-                        /*A class with out an extra '-'
-                        * ex. 4 - Calculus
-                        * Becomes ex. Calculus*/
+                    /*If number has no extra '-' checks if has a period attached or not*/
                     } else if (justClass[1]) {
-                        justClass = justClass[1].trim();
+                        /*A class with '-' like English 2-2 checks if after split if the first
+                        value is a num, if not no period*/
+                        if(isNaN(Number(justClass[0]))){
+                            justClass = seperateClasses[i].trim()
+
+                        /*A class that had a number in first spot after split*/
+                        } else {
+                            /*Checks if it is 3-D/Design, the only class as of 3/14/19
+                            * that has number at start of class and a '-' in it.*/
+                            if (seperateClasses[i].indexOf("D/Design") !== -1) {
+                                justClass = seperateClasses[i].trim()
+
+                                /*A class with out an extra '-'
+                                 * ex. 4 - Calculus
+                                * Becomes ex. Calculus*/
+                            } else {
+                                justClass = justClass[1].trim()
+                            }
+                        }
                     } else { // when subject is empty
                         justClass = justClass[0].trim();
                     }
@@ -1462,7 +1478,7 @@ $( document ).ready(function() {
                 i--;
                 continue;
 
-                /*if it is row that doesn't actually contain a student*/
+                /*if it is a row that doesn't actually contain a student*/
             } else if (upLoadedSheet[i]["Perm ID #"] === "Total # of Sessions:"
                 || upLoadedSheet[i]["Perm ID #"] === "Total # of Students:"
                 || upLoadedSheet[i]["Perm ID #"] === "Perm ID #"){
@@ -1524,7 +1540,7 @@ $( document ).ready(function() {
             }
 
             /*Removes the period from from period attendance subjects*/
-            if(location === "periodAttendance" && upLoadedSheet[i]["Subject"] !== undefined){
+            if(upLoadedSheet[i]["Subject"] !== undefined){
                 removePeriodFromClass(upLoadedSheet[i]);
 
             }
