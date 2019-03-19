@@ -881,9 +881,9 @@ $( document ).ready(function() {
                 }
 
                 /*EOS Totals Fall Or EOS Totals Spring*/
-            }else if(prop === "periodAttendance" && ((theSelector.value === globalObject.arrayOfPossibleChoices[8])
-                || (theSelector.value === globalObject.arrayOfPossibleChoices[10]))
-                && globalObject.objSheetAr.periodAttendance.length === 5){
+            }else if(prop === "periodAttendance" &&
+                (((theSelector.value === globalObject.arrayOfPossibleChoices[8]) && (globalObject.objSheetAr.periodAttendance.length === 5))
+             || ((theSelector.value === globalObject.arrayOfPossibleChoices[10]) && (globalObject.objSheetAr.periodAttendance.length === 6)))){
 
                 ModifyUpLoads(globalObject.objSheetAr);
                 var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
@@ -897,9 +897,9 @@ $( document ).ready(function() {
 
 
                 /*EOS AS Totals Fall Or EOS AS Totals Spring*/
-            }else if(prop === "periodAttendance" && ((theSelector.value === globalObject.arrayOfPossibleChoices[9])
-                ||(theSelector.value === globalObject.arrayOfPossibleChoices[9]))
-                && globalObject.objSheetAr.periodAttendance.length === 5){
+            }else if(prop === "periodAttendance" &&
+                (((theSelector.value === globalObject.arrayOfPossibleChoices[9]) && (globalObject.objSheetAr.periodAttendance.length === 5))
+             || ((theSelector.value === globalObject.arrayOfPossibleChoices[11]) && (globalObject.objSheetAr.periodAttendance.length === 6)))){
 
                 ModifyUpLoads(globalObject.objSheetAr);
                 var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
@@ -1358,6 +1358,7 @@ $( document ).ready(function() {
             let outterLoopSubjects;
             if(orginalList[keyword] === undefined){
                 outterLoopSubjects = [""];
+                orginalList[keyword] = ""
             }else {
                 outterLoopSubjects = orginalList[keyword].split(",");
             }
@@ -1383,8 +1384,21 @@ $( document ).ready(function() {
                         break;
                     }
                 }
-                if (newUniqueSubject && innerLoopSubjects[j2]!== "") {
+                /*this ensures that it is a unique addition to the subjects and that it is not blank
+                * and that the orginal list of subjects is not blank as well*/
+                if (newUniqueSubject && innerLoopSubjects[j2]!== "" &&
+                    (orginalList[keyword] !== undefined) && (orginalList[keyword] !== "")) {
+
                     orginalList[keyword] = orginalList[keyword] + ", " + innerLoopSubjects[j2].trim();
+                    outterLoopSubjects = orginalList[keyword].split(",");
+                    outterLoopSubjects = outterLoopSubjects.map(s => s.trim());
+
+                    /*this is a fall back case, if it is a new subject and not blank and
+                     * the orginal list of subjects is either blank or not defined at all */
+                } else if (newUniqueSubject && innerLoopSubjects[j2]!== "" &&
+                    ((orginalList[keyword] === undefined) || (orginalList[keyword] === ""))) {
+
+                    orginalList[keyword] = newList[keyword];
                     outterLoopSubjects = orginalList[keyword].split(",");
                     outterLoopSubjects = outterLoopSubjects.map(s => s.trim());
                 }
