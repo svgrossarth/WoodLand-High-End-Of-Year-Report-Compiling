@@ -131,7 +131,7 @@ $( document ).ready(function() {
             AttachInputTextInital(textNode);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
-            /*Convert Aries Query Fall With ALL Programs*/
+            /*Attendance and Log Roster Fall*/
         } else if(theSelector.value === globalObject.arrayOfPossibleChoices[2]){
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
@@ -143,44 +143,51 @@ $( document ).ready(function() {
             AttachInputTextInital(textNode);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
-            /*Convert Aries Query Spring With ALL Programs*/
+            /*Attendance and Log Roster Spring*/
         } else if(theSelector.value === globalObject.arrayOfPossibleChoices[4]){
             var textNode1 = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             textNodeArray.push(textNode1);
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(textNodeArray, 1, 2, true);
 
-            /*Monthly Lunch ASSETs Report*/
+            /*ASSETs Lunch Report*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[5]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
-            /*Monthly After School ASSETs Report*/
+            /*ASSETs AS Report*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[6]){
             var textNodeAttendance = document.createTextNode("Please Select Attendance File");
             textNodeArray.push(textNodeAttendance);
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
-            /*Monthly Migrant Ed Report*/
+            /*Migrant Ed Monthly Report*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[7]){
             var textNodeAttendance = document.createTextNode("Please Select Excel Sheet Containing All Program Roster's");
             AttachInputTextInital(textNodeAttendance);
             MonthWanted();
             $('#innerInputDiv1').after(TheButGenerator("Next"));
 
-            /*End of fall semester report*/
-        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+            /*EOS Totals Fall Or EOS Totals Spring*/
+        }else if((theSelector.value === globalObject.arrayOfPossibleChoices[8]) ||
+            (theSelector.value === globalObject.arrayOfPossibleChoices[10])){
             NumOfFilesDesired("Number Of UCD Tutor Logs To Be Used In Report");
             $('#innerInputDiv0').after(TheButGenerator("Next"));
 
-            /*End of fall after school and lunch report*/
+            /*EOS AS Totals Fall*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[9]){
             let textNode = 'Select Period Attendance Files From August to December';
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(false, 1, 5, true);
+
+            /*EOS AS Totals Spring*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[11]){
+            let textNode = 'Select Period Attendance Files From January to June';
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(false, 1, 6, true);
 
             /*Test for fall peer tutors*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[12]){
@@ -412,10 +419,16 @@ $( document ).ready(function() {
     /*Run after the user hits next*/
     function NextRequest() {
         let text0 = $('#text0');
+        /*When working with end of fall semester reports that work with tutor logs
+        * the month needs to be set to August so it will look at there logs starting in August*/
         if(theSelector.value === globalObject.arrayOfPossibleChoices[8] ||
             theSelector.value === globalObject.arrayOfPossibleChoices[12] ||
             theSelector.value === globalObject.arrayOfPossibleChoices[13]){
             globalObject.userEnteredData.month = "August";
+            /*When working with end of spring semester reports that work with tutor logs
+        * the month needs to be set to January so it will look at there logs starting in January*/
+        } else if(theSelector.value === globalObject.arrayOfPossibleChoices[10]){
+            globalObject.userEnteredData.month = "January";
         }
         /*After entering how many tutor logs to enter and maybe what month you want go here*/
         if(text0.text() === 'Number Of UCD Tutor Logs To Be Used In Report'){
@@ -488,7 +501,8 @@ $( document ).ready(function() {
             AttachInputTextInital(textNodeAttendance);
             $('#innerInputDiv0').after(TheButGenerator("Submit"));
 
-            /*After selecting the peer tutor logs to be used go here to get all the period attendance files needed*/
+            /*After selecting the peer tutor logs to be used go here to get all the period attendance files
+            * for the EOS Fall total report*/
         } else if(text0.text() === 'Select Peer Tutor Monthly Logs' &&
                     theSelector.value === globalObject.arrayOfPossibleChoices[8]){
             GetManyOfTheSameFile("tutorMonthlyLog");
@@ -496,6 +510,15 @@ $( document ).ready(function() {
             let textNode = 'Select Period Attendance Files From August to December';
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(false, 1, 5, true);
+            /*After selecting the peer tutor logs to be used go here to get all the period attendance files
+            * for the EOS Spring total report*/
+        } else if(text0.text() === 'Select Peer Tutor Monthly Logs' &&
+            theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+            GetManyOfTheSameFile("tutorMonthlyLog");
+            clearHTMLAfterSelector();
+            let textNode = 'Select Period Attendance Files From January to June';
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(false, 1, 6, true);
         } else if(text0.text() === 'Please Select Excel Sheet Containing All Program Roster\'s' &&
                     theSelector.value === globalObject.arrayOfPossibleChoices[7]){
             GetEachProgramRoster();
@@ -520,7 +543,7 @@ $( document ).ready(function() {
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[1]){
             GetSingleFile("ariesQuery");
 
-            /*Convert Aries Query Fall With ALL Programs*/
+            /*Attendance and Log Roster Fall*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[2]){
             GetEachProgramRoster();
 
@@ -528,33 +551,35 @@ $( document ).ready(function() {
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[3]){
             GetSingleFile("ariesQuery");
 
-            /*Convert Aries Query Spring With ALL Programs*/
+            /*Attendance and Log Roster Spring*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[4]){
             GetEachProgramRoster();
 
-            /*Monthly Lunch ASSETs Report*/
+            /*ASSETs Lunch Report*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[5]){
             GetSingleFile("periodAttendance");
 
-            /*Monthly After School ASSETs Report*/
+            /*ASSETs AS Report*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[6]){
             GetSingleFile("periodAttendance");
 
-            /*Monthly Migrant Ed Report*/
+            /*Migrant Ed Monthly Report*/
             /*This is really the final step after we have gotten all the UCD tutor logs
             * and after we have gotten all the peer tutor logs*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[7]) {
             GetSingleFile("periodAttendance");
 
 
-            /*End Of Fall Semester Totals
+            /*EOS Totals Fall Or EOS Totals Spring
             * This is really the final step after we have gotten all the UCD tutor logs
             * and after we have gotten all the peer tutor logs*/
-        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+        }else if((theSelector.value === globalObject.arrayOfPossibleChoices[8]) ||
+            (theSelector.value === globalObject.arrayOfPossibleChoices[10])){
             GetManyOfTheSameFile("periodAttendance");
 
-            /*End Of Fall Semester Lunch and After School Report*/
-        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[9]){
+            /*EOS AS Totals Fall Or EOS AS Totals Spring*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[9] ||
+            (theSelector.value === globalObject.arrayOfPossibleChoices[11])){
             GetManyOfTheSameFile("periodAttendance");
 
             /*End Of Fall Semester Peer tutor test*/
@@ -798,19 +823,19 @@ $( document ).ready(function() {
                 /*ASSETs Lunch Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[5]){
                 let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "ASSETsLunchReport.xlsx", "ASSETs");
+                CreateNewExcel(sheetAr, "ASSETs Lunch Report.xlsx", "ASSETs");
 
-                /*ASSETs After School Report*/
+                /*ASSETs AS Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[6]){
                 let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "ASSETsAfterSchoolReport.xlsx", "ASSETs");
+                CreateNewExcel(sheetAr, "ASSETs AS Report.xlsx", "ASSETs");
 
                 /*Student Roster with out programs, fall*/
             } else if(theSelector.value === globalObject.arrayOfPossibleChoices[1]){
                 let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], true);
                 CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
 
-                /*Student Roster WITH programs, fall.
+                /*Attendance and Log Roster Fall.
                 * The if check needs to include all of those things to ensure that
                 * all of the components needed to assemble the parsed aries query are
                 * there. This is because the process of them becoming a json is asynchronous
@@ -821,14 +846,14 @@ $( document ).ready(function() {
 
                 let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], true);
                 sheetAr = AddPrograms(sheetAr);
-                CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
+                CreateNewExcel(sheetAr, "Attendance and Log Roster Fall.xlsx");
 
                 /*Student Roster with out programs, Spring*/
             } else if(theSelector.value === globalObject.arrayOfPossibleChoices[3]){
                 let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], false);
                 CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
 
-                /*Student Roster WITH programs, Spring.
+                /*Attendance and Log Roster Spring.
                 * The if check needs to include all of those things to ensure that
                 * all of the components needed to assemble the parsed aries query are
                 * there. This is because the process of them becoming a json is asynchronous
@@ -839,9 +864,9 @@ $( document ).ready(function() {
 
                 let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], false);
                 sheetAr = AddPrograms(sheetAr);
-                CreateNewExcel(sheetAr, "Parsed Aries Query With Programs.xlsx");
+                CreateNewExcel(sheetAr, "Attendance and Log Roster Spring.xlsx");
 
-                /*Monthly Mig Report*/
+                /*Migrant Ed Monthly Report*/
             }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[7]){
                 if(globalObject.objSheetAr.tutorMonthlyLog.length > 1){
                     let tutorConatenatedSheet = ConcatenateSheets(globalObject.objSheetAr.tutorMonthlyLog);
@@ -851,27 +876,41 @@ $( document ).ready(function() {
                     let periodAttendLunchandAS = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
                     MigEdSimplify(periodAttendLunchandAS);
                     let arrayOfSheets = [periodAttendLunchandAS[0],periodAttendLunchandAS[1], inClassTotals];
-                    CreateNewExcel(arrayOfSheets, "MigEdMonthlyReport.xlsx", "MigEd");
+                    CreateNewExcel(arrayOfSheets, "Migrant Ed Monthly Report.xlsx", "MigEd");
 
                 }
 
-                /*End Of Fall Semester Totals*/
-            }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[8]
+                /*EOS Totals Fall Or EOS Totals Spring*/
+            }else if(prop === "periodAttendance" && ((theSelector.value === globalObject.arrayOfPossibleChoices[8])
+                || (theSelector.value === globalObject.arrayOfPossibleChoices[10]))
                 && globalObject.objSheetAr.periodAttendance.length === 5){
-                ModifyUpLoads(globalObject.objSheetAr);
-                var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
-                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
-                let sheetAr = TotalCount(concatendatedSuperSheet);
-                CreateNewExcel(sheetAr, "End Of Fall Semester Totals.xlsx");
 
-                /*End Of Fall Semester Lunch and After School*/
-            }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[9]
-                && globalObject.objSheetAr.periodAttendance.length === 5){
                 ModifyUpLoads(globalObject.objSheetAr);
                 var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
-                CreateNewExcel(sheetAr, "End Of Fall Semester Lunch and After School Totals.xlsx");
+                if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+                    CreateNewExcel(sheetAr, "EOS Totals Fall.xlsx");
+                } else {
+                    CreateNewExcel(sheetAr, "EOS Totals Spring.xlsx");
+                }
+
+
+                /*EOS AS Totals Fall Or EOS AS Totals Spring*/
+            }else if(prop === "periodAttendance" && ((theSelector.value === globalObject.arrayOfPossibleChoices[9])
+                ||(theSelector.value === globalObject.arrayOfPossibleChoices[9]))
+                && globalObject.objSheetAr.periodAttendance.length === 5){
+
+                ModifyUpLoads(globalObject.objSheetAr);
+                var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
+                var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
+                let sheetAr = TotalCount(concatendatedSuperSheet);
+                if(theSelector.value === globalObject.arrayOfPossibleChoices[9]){
+                    CreateNewExcel(sheetAr, "EOS AS Totals Fall.xlsx");
+                } else {
+                    CreateNewExcel(sheetAr, "EOS AS Totals Spring.xlsx");
+                }
+
 
                 /*End Of Fall Semester Peer tutor test*/
             }else if(prop === "tutorMonthlyLog" && theSelector.value === globalObject.arrayOfPossibleChoices[12]
