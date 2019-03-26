@@ -1,0 +1,16 @@
+To package the app the commandline is
+	$ electron-packager --electron-version=2.0.2 .
+
+
+To package the app for all systems (besides mac)
+$ electron-packager --all --electron-version=2.0.2 .
+
+
+To package just for a 32-bit Windows computer (which is what it needs to be for the LC)
+$ electron-packager --platform=win32 --arch=ia32 --electron-version=2.0.2 .
+
+
+
+
+	A short cut can be made easily that targets the executable by right clicking at like the desktop
+	and clicking create desktop

@@ -1,13 +1,18 @@
 
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, globalShortcut} = require('electron')
+
+
+
+
+
+
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
-
 function createWindow () {
     // Create the browser window.
-    win = new BrowserWindow({show: false});
+    win = new BrowserWindow({show: false, title: "Report and Student Roster Generator"});
     win.maximize();
     win.show();
 
@@ -15,7 +20,7 @@ function createWindow () {
     win.loadFile('index.html')
 
     // Open the DevTools.
-    win.webContents.openDevTools()
+    //win.webContents.openDevTools()
 
     // Emitted when the window is closed.
     win.on('closed', () => {
@@ -46,5 +51,38 @@ app.on('activate', () => {
     if (win === null) {
         createWindow()
     }
+})
+
+//https://electronjs.org/docs/api/global-shortcut
+app.on('ready', () => {
+    // Register a 'CommandOrControl+X' shortcut listener.
+    const ret = globalShortcut.register('CommandOrControl+D', () => {
+        console.log('CommandOrControl+D is pressed')
+        win.webContents.openDevTools()
+    })
+    if (!ret) {
+        console.log('registration failed')
+    }
+
+    const ret2 = globalShortcut.register('CommandOrControl+R', () => {
+        console.log('CommandOrControl+R is pressed')
+        win.reload()
+    })
+    if (!ret2) {
+        console.log('registration failed')
+    }
+
+
+
+    // Check whether a shortcut is registered.
+    //console.log(globalShortcut.isRegistered('CommandOrControl+X'))
+})
+
+app.on('will-quit', () => {
+    // Unregister a shortcut.
+    globalShortcut.unregister('CommandOrControl+X')
+
+    // Unregister all shortcuts.
+    globalShortcut.unregisterAll()
 })
 

@@ -17,8 +17,15 @@ $( document ).ready(function() {
             "ASSETs Lunch Report", "ASSETs AS Report", "Migrant Ed Monthly Report",
             "EOS Totals Fall", "EOS AS Totals Fall", "EOS Totals Spring", "EOS AS Totals Spring",
             "Test for Peer Tutors End Of Fall Semester", "Test for UC Davis Tutors End Of Fall Semester",
-            "Test for Period Attendance End Of Fall Semester"],  //Need to implement 10 and 11 which are eos spring,
-                                                                // will later do 15 which will be end of the year totals
+            "Test for Period Attendance End Of Fall Semester", "EOY Report"],
+
+
+/*[ 0 "Total Count",                                   1 "Convert Aries Query Fall", 2  "Attendance and Log Roster Fall",
+3  "Convert Aries Query Spring",                       4 "Attendance and Log Roster Spring",
+5  "ASSETs Lunch Report",                              6 "ASSETs AS Report",         7  "Migrant Ed Monthly Report",
+8  "EOS Totals Fall",                                  9 "EOS AS Totals Fall",       10 "EOS Totals Spring", 11 "EOS AS Totals Spring",
+12 "Test for Peer Tutors End Of Fall Semester",       13 "Test for UC Davis Tutors End Of Fall Semester",
+14 "Test for Period Attendance End Of Fall Semester", 15 "EOY Report"]*/
 
     /*Saves user data entered after selecting report*/
     userEnteredData : {
@@ -33,11 +40,12 @@ $( document ).ready(function() {
         periodAttendance: new Array(),
         tutorMonthlyLog: new Array(),
         peerTutorMonthlyLog: new Array(),
-        ariesQuery: "",
+        EOS: new Array(),
+        aeriesQuery: "",
         etsRoster: "",
         ptsRoster: "",
         migRoster: "",
-        eldRoster: "",
+        eldRoster: ""
     },
 
         numberOfDuplicatesFound : 0,
@@ -117,7 +125,7 @@ $( document ).ready(function() {
         clearHTMLAfterSelector();
         ClearOldData();
         var textNodeArray = [];
-        var textNode = document.createTextNode("Please Select Aries Query");
+        var textNode = document.createTextNode("Please Select Aeries Query");
         textNodeArray.push(textNode);
 
         /*Total Count*/
@@ -204,6 +212,12 @@ $( document ).ready(function() {
             let textNode = 'Select Period Attendance Files From August to December';
             AttachInputTextInital(textNode);
             AttachInputTextMultiple(false, 1, 5, true);
+
+            /*EOY Report*/
+        } else if(theSelector.value === globalObject.arrayOfPossibleChoices[15]){
+            let textNode = 'Select a Fall and Spring EOS report';
+            AttachInputTextInital(textNode);
+            AttachInputTextMultiple(false, 1, 2, true);
         }
 
 
@@ -231,7 +245,7 @@ $( document ).ready(function() {
         globalObject.objSheetAr.periodAttendance = [];
         globalObject.objSheetAr.tutorMonthlyLog = [];
         globalObject.objSheetAr.peerTutorMonthlyLog = [];
-        globalObject.objSheetAr.ariesQuery = "";
+        globalObject.objSheetAr.aeriesQuery = "";
         globalObject.objSheetAr.etsRoster = "";
         globalObject.objSheetAr.ptsRoster = "";
         globalObject.objSheetAr.migRoster = "";
@@ -541,7 +555,7 @@ $( document ).ready(function() {
 
             /*Convert Aries Query Fall*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[1]){
-            GetSingleFile("ariesQuery");
+            GetSingleFile("aeriesQuery");
 
             /*Attendance and Log Roster Fall*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[2]){
@@ -549,7 +563,7 @@ $( document ).ready(function() {
 
             /*Convert Aries Query Spring*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[3]){
-            GetSingleFile("ariesQuery");
+            GetSingleFile("aeriesQuery");
 
             /*Attendance and Log Roster Spring*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[4]){
@@ -593,6 +607,10 @@ $( document ).ready(function() {
             /*End Of Fall Semester Period Attendance test*/
         }else if(theSelector.value === globalObject.arrayOfPossibleChoices[14]){
             GetManyOfTheSameFile("periodAttendance");
+
+            /*EOY Report*/
+        }else if(theSelector.value === globalObject.arrayOfPossibleChoices[15]){
+            GetManyOfTheSameFile("EOS");
         }
     }
 
@@ -630,7 +648,7 @@ $( document ).ready(function() {
                 reader.onload = function (e) {
                     if(fileType === "tutorMonthlyLog"){
                         ConvertSheetToJSON(e, 3, fileType);
-                    } else if(fileType === "periodAttendance"){
+                    } else if(fileType === "periodAttendance" || fileType === "EOS"){
                         ConvertSheetToJSON(e, 0, fileType);
                     }
                 };
@@ -641,7 +659,7 @@ $( document ).ready(function() {
 
 
     /*Processing excel sheets that contain an
-    * aries query and then a sheet containing all
+    * aeries query and then a sheet containing all
     * programs. This can now handle 2 scenarios. One for making the database for the
      * excel file. The other is when creating a mig ed report.*/
     function GetEachProgramRoster() {
@@ -661,7 +679,7 @@ $( document ).ready(function() {
                     ConvertSheetToJSONAllPrograms(e);
                 } else{
                     if(i == 0){
-                        ConvertSheetToJSON(e, 0, "ariesQuery");
+                        ConvertSheetToJSON(e, 0, "aeriesQuery");
                     }else if(i == 1){
                         ConvertSheetToJSONAllPrograms(e);
                     }
@@ -681,7 +699,7 @@ $( document ).ready(function() {
         let workBook = XLSX.read(data, {type: 'array'});
         let arSheets = workBook.SheetNames;
         let workSheet = workBook.Sheets[arSheets[correctSheet]];
-        if(sheetName === "periodAttendance") {
+        if(sheetName === "periodAttendance" || sheetName === "EOS") {
             /*The global object needs to be changed to store
             * the sheet array but the proxy just needs to have its value updated
             * so that it will trigger the handler*/
@@ -818,53 +836,53 @@ $( document ).ready(function() {
             /*Total Count */
             if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[0]) {
                 let sheetAr = TotalCount(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "TotalCountReport.xlsx");
+                CreateNewExcel(sheetAr, "TotalCountReport");
 
                 /*ASSETs Lunch Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[5]){
                 let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "ASSETs Lunch Report.xlsx", "ASSETs");
+                CreateNewExcel(sheetAr, "ASSETs Lunch Report", "ASSETs");
 
                 /*ASSETs AS Report*/
             }else if (prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[6]){
                 let sheetAr = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
-                CreateNewExcel(sheetAr, "ASSETs AS Report.xlsx", "ASSETs");
+                CreateNewExcel(sheetAr, "ASSETs AS Report", "ASSETs");
 
                 /*Student Roster with out programs, fall*/
             } else if(theSelector.value === globalObject.arrayOfPossibleChoices[1]){
-                let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], true);
-                CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
+                let sheetAr = AeriesQuery(globalObject.objSheetAr["aeriesQuery"], true);
+                CreateNewExcel(sheetAr, "Parsed Aeries Query No Programs");
 
                 /*Attendance and Log Roster Fall.
                 * The if check needs to include all of those things to ensure that
-                * all of the components needed to assemble the parsed aries query are
+                * all of the components needed to assemble the parsed Aeries query are
                 * there. This is because the process of them becoming a json is asynchronous
                 * so the ordering for when they finish is unknown.*/
-            }else if(theSelector.value === globalObject.arrayOfPossibleChoices[2] && obj["ariesQuery"] !== ""
+            }else if(theSelector.value === globalObject.arrayOfPossibleChoices[2] && obj["aeriesQuery"] !== ""
                 && obj["etsRoster"] !== "" && obj["ptsRoster"] !== ""
                 && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
 
-                let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], true);
+                let sheetAr = AeriesQuery(globalObject.objSheetAr["aeriesQuery"], true);
                 sheetAr = AddPrograms(sheetAr);
-                CreateNewExcel(sheetAr, "Attendance and Log Roster Fall.xlsx");
+                CreateNewExcel(sheetAr, "Attendance and Log Roster Fall");
 
                 /*Student Roster with out programs, Spring*/
             } else if(theSelector.value === globalObject.arrayOfPossibleChoices[3]){
-                let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], false);
-                CreateNewExcel(sheetAr, "Parsed Aries Query No Programs.xlsx");
+                let sheetAr = AeriesQuery(globalObject.objSheetAr["aeriesQuery"], false);
+                CreateNewExcel(sheetAr, "Parsed Aeries Query No Programs");
 
                 /*Attendance and Log Roster Spring.
                 * The if check needs to include all of those things to ensure that
-                * all of the components needed to assemble the parsed aries query are
+                * all of the components needed to assemble the parsed aeries query are
                 * there. This is because the process of them becoming a json is asynchronous
                 * so the ordering for when they finish is unknown.*/
-            }else if(theSelector.value === globalObject.arrayOfPossibleChoices[4] && obj["ariesQuery"] !== ""
+            }else if(theSelector.value === globalObject.arrayOfPossibleChoices[4] && obj["aeriesQuery"] !== ""
                 && obj["etsRoster"] !== "" && obj["ptsRoster"] !== ""
                 && obj["migRoster"] !== "" && obj["eldRoster"] !== ""){
 
-                let sheetAr = AriesQuery(globalObject.objSheetAr["ariesQuery"], false);
+                let sheetAr = AeriesQuery(globalObject.objSheetAr["aeriesQuery"], false);
                 sheetAr = AddPrograms(sheetAr);
-                CreateNewExcel(sheetAr, "Attendance and Log Roster Spring.xlsx");
+                CreateNewExcel(sheetAr, "Attendance and Log Roster Spring");
 
                 /*Migrant Ed Monthly Report*/
             }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[7]){
@@ -876,7 +894,7 @@ $( document ).ready(function() {
                     let periodAttendLunchandAS = MonthlyReport(globalObject.objSheetAr["periodAttendance"][0]);
                     MigEdSimplify(periodAttendLunchandAS);
                     let arrayOfSheets = [periodAttendLunchandAS[0],periodAttendLunchandAS[1], inClassTotals];
-                    CreateNewExcel(arrayOfSheets, "Migrant Ed Monthly Report.xlsx", "MigEd");
+                    CreateNewExcel(arrayOfSheets, "Migrant Ed Monthly Report", "MigEd");
 
                 }
 
@@ -890,9 +908,9 @@ $( document ).ready(function() {
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
                 if(theSelector.value === globalObject.arrayOfPossibleChoices[8]){
-                    CreateNewExcel(sheetAr, "EOS Totals Fall.xlsx");
+                    CreateNewExcel(sheetAr, "EOS Totals Fall");
                 } else {
-                    CreateNewExcel(sheetAr, "EOS Totals Spring.xlsx");
+                    CreateNewExcel(sheetAr, "EOS Totals Spring");
                 }
 
 
@@ -906,9 +924,9 @@ $( document ).ready(function() {
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
                 if(theSelector.value === globalObject.arrayOfPossibleChoices[9]){
-                    CreateNewExcel(sheetAr, "EOS AS Totals Fall.xlsx");
+                    CreateNewExcel(sheetAr, "EOS AS Totals Fall");
                 } else {
-                    CreateNewExcel(sheetAr, "EOS AS Totals Spring.xlsx");
+                    CreateNewExcel(sheetAr, "EOS AS Totals Spring");
                 }
 
 
@@ -919,7 +937,7 @@ $( document ).ready(function() {
                 var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
-                CreateNewExcel(sheetAr, "End Of Fall Semester Peer Tutor Test.xlsx");
+                CreateNewExcel(sheetAr, "End Of Fall Semester Peer Tutor Test");
 
                 /*End Of Fall Semester UC Davis tutor test*/
             }else if(prop === "tutorMonthlyLog" && theSelector.value === globalObject.arrayOfPossibleChoices[13]
@@ -928,7 +946,7 @@ $( document ).ready(function() {
                 var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
-                CreateNewExcel(sheetAr, "End Of Fall Semester UC Davis Tutor Test.xlsx");
+                CreateNewExcel(sheetAr, "End Of Fall Semester UC Davis Tutor Test");
 
                 /*End Of Fall Semester Period Attendance test*/
             }else if(prop === "periodAttendance" && theSelector.value === globalObject.arrayOfPossibleChoices[14]
@@ -937,7 +955,14 @@ $( document ).ready(function() {
                 var combinedSuperSheet = [globalObject.objSheetAr.tutorMonthlyLog, globalObject.objSheetAr.periodAttendance];
                 var concatendatedSuperSheet = ConcatenateSheets(combinedSuperSheet);
                 let sheetAr = TotalCount(concatendatedSuperSheet);
-                CreateNewExcel(sheetAr, "End Of Fall Semester Period Attendance test.xlsx");
+                CreateNewExcel(sheetAr, "End Of Fall Semester Period Attendance test");
+
+                /*EOY Report*/
+            }else if(prop === "EOS" && theSelector.value === globalObject.arrayOfPossibleChoices[15]
+                && globalObject.objSheetAr.EOS.length === 2){
+                var concatendatedSuperSheet = ConcatenateSheets(globalObject.objSheetAr.EOS);
+                let sheetAr = TotalCount(concatendatedSuperSheet);
+                CreateNewExcel(sheetAr, "EOY Report");
             }
         }
     };
@@ -1028,7 +1053,10 @@ $( document ).ready(function() {
         }
         let count = 1;
         for(let i = 0; i < periodAttendance.length; i++){
-            if(periodAttendance[i]["Student ID"] !== undefined && periodAttendance[i]["First Name"] !== undefined) {
+
+            if(!((periodAttendance[i]["First Name"] === "" || periodAttendance[i]["First Name"] === undefined)
+                && (periodAttendance[i]["Last Name"] === "" || periodAttendance[i]["Last Name"] === undefined)
+                && (periodAttendance[i]["Student ID"] === "" || periodAttendance[i]["Student ID"] === undefined))) {
                 let theStudent;
                 /*Lunch*/
                 if (theSelector.value === globalObject.arrayOfPossibleChoices[5]) {
@@ -1074,14 +1102,14 @@ $( document ).ready(function() {
    * classes (in the same row), and removes the duplicate rows
    * semester is true if it is fall semester and it is false if it is
    * spring semester*/
-    function AriesQuery (sheetAr, semester){
+    function AeriesQuery (sheetAr, semester){
         let keyword = "Class";
         for(let i = 0; i < sheetAr.length; i++){
             AddClassSlots(sheetAr[i], keyword);
             for(let j = 0; j < sheetAr.length; j++){
                 if(sheetAr[i]["Student ID"] === sheetAr[j]["Student ID"]){
                     if(i !== j){
-                        /*this is for a fall aries query*/
+                        /*this is for a fall aeries query*/
                         if((sheetAr[j]["Semester"] !== "S") && (semester === true)){
                             let period = sheetAr[j]["Period"];
                             keyword = keyword + period;
@@ -1092,7 +1120,7 @@ $( document ).ready(function() {
                             j--; // change index since a row was removed
                             keyword = "Class";
 
-                            /*this is for the spring aries query*/
+                            /*this is for the spring aeries query*/
                         } else if ((sheetAr[j]["Semester"] !== "F") && (semester === false)){
                             let period = sheetAr[j]["Period"];
                             keyword = keyword + period;
@@ -1481,6 +1509,7 @@ $( document ).ready(function() {
         singleObject.Class7 = "";
         singleObject.Class8 = "";
         singleObject.Class9 = "";
+        singleObject.Class10 = "College Bound"
         singleObject.AVID = "";
         let period = singleObject["Period"];
         keyword = keyword + period;
@@ -1554,7 +1583,8 @@ $( document ).ready(function() {
                     upLoadedSheet[i].LC = "";
                     upLoadedSheet[i].AS = "X";
                 } else{
-                    if(globalObject.arrayOfPossibleChoices[9] === theSelector.value){
+                    if((globalObject.arrayOfPossibleChoices[9] === theSelector.value) ||
+                        (globalObject.arrayOfPossibleChoices[11] === theSelector.value)){
                         upLoadedSheet.splice(i, 1);
                         i--;
                         continue;
@@ -1805,6 +1835,12 @@ $( document ).ready(function() {
     /*After the given sheets have been parsed, here the result is
    * turned in a new excel sheet and then workbook.*/
     function CreateNewExcel(sheetAr, newExcelName, MonthlyReport = false){
+        var date = new Date()
+        var month = date.getMonth() + 1
+        var todaysDate =  " (" + month + "-" + date.getDate() + "-" + date.getFullYear() + ")"
+
+
+        newExcelName =  newExcelName + todaysDate + ".xlsx"
         console.log("The number of duplicates found was " + globalObject.numberOfDuplicatesFound);
         console.log("The number of counts added was " + globalObject.numberOfcountsAdded);
         let actualDif = globalObject.numberOfDuplicatesFound - globalObject.numberOfcountsAdded;
@@ -1863,9 +1899,37 @@ $( document ).ready(function() {
         let successMesInner = $('#successMessageInner');
         successMesInner.append('<div id="successMessageTitle" class="messageTitle"> Success </div>');
         successMesInner.append('<div class="messageInMessage"></div>');
-        let theMessage = "Congratulations, " + newExcelname + " has been created!!!";
-        $('.messageInMessage').append(theMessage);
+
+        let boldNameOfFile = `<b>${newExcelname}</b>`
+        let theMessage = "Congratulations, " + boldNameOfFile + " has been created!!!\n";
+        let theMessageDiv = `<div>${theMessage}</div>`
+
+
+        $('.messageInMessage').append(theMessageDiv);
+
+        if((theSelector.value === globalObject.arrayOfPossibleChoices[5])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[6])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[7])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[8])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[9])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[10])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[11])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[15])){
+
+            let actualDif = (globalObject.numberOfDuplicatesFound - globalObject.numberOfcountsAdded) * -1
+            let diffCount = "**Note: The file generated will have a difference  of " + actualDif + " in its total number of sessions.**"
+            let diffCountDiv = `<div>${diffCount}</div>`
+            $('.messageInMessage').append(diffCountDiv);
+        }
+
         $("*").css("cursor", "default");
     }
 });
 
+
+/*[ 0 "Total Count",                                   1 "Convert Aries Query Fall", 2  "Attendance and Log Roster Fall",
+3  "Convert Aries Query Spring",                       4 "Attendance and Log Roster Spring",
+5  "ASSETs Lunch Report",                              6 "ASSETs AS Report",         7  "Migrant Ed Monthly Report",
+8  "EOS Totals Fall",                                  9 "EOS AS Totals Fall",       10 "EOS Totals Spring", 11 "EOS AS Totals Spring",
+12 "Test for Peer Tutors End Of Fall Semester",       13 "Test for UC Davis Tutors End Of Fall Semester",
+14 "Test for Period Attendance End Of Fall Semester", 15 "EOY Report"]*/
