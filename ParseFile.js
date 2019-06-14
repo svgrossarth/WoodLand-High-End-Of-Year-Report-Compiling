@@ -466,7 +466,8 @@ $( document ).ready(function() {
             }else{
                 /*Checks which report is being generated to determine what should be added to DOM*/
                 if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
-                    globalObject.arrayOfPossibleChoices[7] === theSelector.value){
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[10] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, false);
                 } else if (globalObject.arrayOfPossibleChoices[13] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfUCDTutorFiles, true);
@@ -499,7 +500,8 @@ $( document ).ready(function() {
 
                 /*Checks which report is being generated to determine what should be added to DOM*/
                 if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
-                    globalObject.arrayOfPossibleChoices[7] === theSelector.value){
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[10] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, false);
                 } else if (globalObject.arrayOfPossibleChoices[12] === theSelector.value){
                     AttachInputTextMultiple(false, 1, globalObject.userEnteredData.numberOfPeerTutorFiles, true);
@@ -527,7 +529,7 @@ $( document ).ready(function() {
             /*After selecting the peer tutor logs to be used go here to get all the period attendance files
             * for the EOS Spring total report*/
         } else if(text0.text() === 'Select Peer Tutor Monthly Logs' &&
-            theSelector.value === globalObject.arrayOfPossibleChoices[8]){
+            theSelector.value === globalObject.arrayOfPossibleChoices[10]){
             GetManyOfTheSameFile("tutorMonthlyLog");
             clearHTMLAfterSelector();
             let textNode = 'Select Period Attendance Files From January to June';
