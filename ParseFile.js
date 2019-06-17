@@ -458,7 +458,8 @@ $( document ).ready(function() {
             AttachInputTextInital(textNode);
             if(globalObject.userEnteredData.numberOfUCDTutorFiles === 1){
                 if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
-                    globalObject.arrayOfPossibleChoices[7] === theSelector.value) {
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[10] === theSelector.value) {
                     $('#innerInputDiv0').after(TheButGenerator("Next"));
                 } else if (globalObject.arrayOfPossibleChoices[13] === theSelector.value) {
                     $('#innerInputDiv0').after(TheButGenerator("Submit"));
@@ -491,7 +492,8 @@ $( document ).ready(function() {
             if(globalObject.userEnteredData.numberOfPeerTutorFiles === 1){
                 /*Checks which report is being generated to determine what should be added to DOM*/
                 if(globalObject.arrayOfPossibleChoices[8] === theSelector.value ||
-                    globalObject.arrayOfPossibleChoices[7] === theSelector.value) {
+                    globalObject.arrayOfPossibleChoices[7] === theSelector.value ||
+                    globalObject.arrayOfPossibleChoices[10] === theSelector.value) {
                     $('#innerInputDiv0').after(TheButGenerator("Next"));
                 } else if (globalObject.arrayOfPossibleChoices[12] === theSelector.value){
                     $('#innerInputDiv0').after(TheButGenerator("Submit"));
@@ -700,6 +702,16 @@ $( document ).ready(function() {
         data = new Uint8Array(data);
         let workBook = XLSX.read(data, {type: 'array'});
         let arSheets = workBook.SheetNames;
+        //new logs seems to have different ordering of sheet
+        /*** This is a bandaid if I have more time later I will change better***/
+        if(sheetName === "tutorMonthlyLog"){
+            for(let i = 0; i < arSheets.length; i++){
+                if(arSheets[i] === "General Subjects IC"){
+                    correctSheet = i;
+                    break;
+                }
+            }
+        }
         let workSheet = workBook.Sheets[arSheets[correctSheet]];
         if(sheetName === "periodAttendance" || sheetName === "EOS") {
             /*The global object needs to be changed to store
@@ -715,6 +727,7 @@ $( document ).ready(function() {
                 "October", "November", "December"];
             if((globalObject.userEnteredData.month === "December") || (globalObject.userEnteredData.month === "June") ||
                 (theSelector.value === globalObject.arrayOfPossibleChoices[8])
+            || (theSelector.value === globalObject.arrayOfPossibleChoices[10])
             || (theSelector.value === globalObject.arrayOfPossibleChoices[12])
             || (theSelector.value === globalObject.arrayOfPossibleChoices[13])){
                 followingMonth = undefined;
