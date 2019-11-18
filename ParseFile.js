@@ -1794,33 +1794,39 @@ $( document ).ready(function() {
    * the exact time spent in the center.*/
     function TimeInCenter(timeOut, timeIn) {
         /*If no time out was entered say they stated for only 1 hour*/
-        if(timeOut === ""){
-            return 1;
-        }
-        let time_In = new Timez(timeIn);
-        let time_out = new Timez(timeOut);
-        let exactTime = time_out.absoluteTime - time_In.absoluteTime;
-        let wholeTime = parseInt(exactTime, 10); // removes minutes, just number of hours
-        let justDecimal = exactTime - wholeTime; // only the minutes
+        try{
+            if(timeOut === "" || timeOut == null){
+                return 1;
+            }
+            let time_In = new Timez(timeIn);
+            let time_out = new Timez(timeOut);
+            let exactTime = time_out.absoluteTime - time_In.absoluteTime;
+            let wholeTime = parseInt(exactTime, 10); // removes minutes, just number of hours
+            let justDecimal = exactTime - wholeTime; // only the minutes
 
-        /*rounds the exact number of minutes to rounded 15 min intervals*/
-        if(justDecimal >= 0 && .25 > justDecimal){
-            justDecimal = 0;
-        }else if(justDecimal >= .25 && .5 > justDecimal){
-            justDecimal = .25;
-        }else if (justDecimal >= .5 && .75 > justDecimal){
-            justDecimal = .5;
-        }else if (justDecimal >= .75){
-            justDecimal = .75;
+            /*rounds the exact number of minutes to rounded 15 min intervals*/
+            if(justDecimal >= 0 && .25 > justDecimal){
+                justDecimal = 0;
+            }else if(justDecimal >= .25 && .5 > justDecimal){
+                justDecimal = .25;
+            }else if (justDecimal >= .5 && .75 > justDecimal){
+                justDecimal = .5;
+            }else if (justDecimal >= .75){
+                justDecimal = .75;
+            }
+            /*If wholeTime < 0 means the student left before they got here, so an error.
+             * It is treated as 1 hour. If wholeTime < 1 the student stayed less then 1 hour,
+              * we round up to an hour in that case.*/
+            if((wholeTime < 0) || (wholeTime < 1)){
+                return 1;
+            }else {
+                return wholeTime + justDecimal; // Takes the number of hours and rounded minutes
+            }
         }
-        /*If wholeTime < 0 means the student left before they got here, so an error.
-         * It is treated as 1 hour. If wholeTime < 1 the student stayed less then 1 hour,
-          * we round up to an hour in that case.*/
-        if((wholeTime < 0) || (wholeTime < 1)){
-            return 1;
-        }else {
-            return wholeTime + justDecimal; // Takes the number of hours and rounded minutes
+        catch(error){
+            console.log("There was an error with the time in or or time out. " + error)
         }
+
     }
 
 
