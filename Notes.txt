@@ -1,5 +1,5 @@
 To package the app the commandline is
-	$ electron-packager --electron-version=2.0.2 .
+$ electron-packager --electron-version=2.0.2 .
 
 
 To package the app for all systems (besides mac)
@@ -12,5 +12,10 @@ $ electron-packager --platform=win32 --arch=ia32 --electron-version=2.0.2 .
 
 
 
-	A short cut can be made easily that targets the executable by right clicking at like the desktop
-	and clicking create desktop
+A short cut can be made easily that targets the executable by right clicking at like the desktop
+and clicking create desktop
+
+Npm errors
+Becareful there is an electron one but it will upgrade electron and it might make it not work so for now don't do that.
+
+Electron Version is 2.0.2 I think it is now in package json thing
